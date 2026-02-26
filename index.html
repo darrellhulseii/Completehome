@@ -1,0 +1,3463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FieldOps CRM — Monterey County</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-deep: #060b14;
+    --bg-card: #0d1520;
+    --bg-panel: #111c2d;
+    --border: #1e3048;
+    --accent-cyan: #00d4ff;
+    --accent-amber: #ffb300;
+    --accent-green: #00e676;
+    --accent-red: #ff4444;
+    --accent-purple: #c084fc;
+    --text-primary: #e8f4fd;
+    --text-secondary: #7a9ab5;
+    --text-dim: #3d5a73;
+    --grid-line: rgba(0, 212, 255, 0.04);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.3);
+    --glow-amber: 0 0 20px rgba(255,179,0,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* HEADER */
+  .header {
+    background: rgba(6,11,20,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    text-shadow: var(--glow-cyan);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .logo span { color: var(--accent-amber); }
+  .header-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 14px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-btn:hover { color: var(--text-primary); }
+  .tab-btn.active {
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+    text-shadow: var(--glow-cyan);
+  }
+  .tab-icon { font-size: 16px; }
+  .badge {
+    background: var(--accent-cyan);
+    color: var(--bg-deep);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* PANELS */
+  .panel { display: none; height: calc(100vh - 120px); }
+  .panel.active { display: flex; flex-direction: column; }
+
+  /* ===== MAP PANEL ===== */
+  #map-panel { flex-direction: row; }
+  .map-sidebar {
+    width: 320px;
+    min-width: 280px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .map-container { flex: 1; position: relative; }
+  #google-map { width: 100%; height: 100%; }
+  .map-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-panel);
+    color: var(--text-secondary);
+    gap: 16px;
+  }
+  .map-api-setup {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    text-align: center;
+  }
+  .map-api-setup h3 { color: var(--accent-cyan); margin-bottom: 8px; font-size: 16px; }
+  .map-api-setup p { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6; }
+
+  .pin-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .pin-list::-webkit-scrollbar { width: 4px; }
+  .pin-list::-webkit-scrollbar-track { background: transparent; }
+  .pin-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .pin-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg-panel);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .pin-item:hover { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0,212,255,0.1); }
+  .pin-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .pin-info { flex: 1; min-width: 0; }
+  .pin-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pin-addr { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pin-status { font-size: 10px; font-family: 'IBM Plex Mono', monospace; margin-top: 3px; }
+  .pin-delete {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px;
+    transition: color 0.15s;
+  }
+  .pin-delete:hover { color: var(--accent-red); }
+
+  /* Pin status colors */
+  .status-not-home { color: #7a9ab5; }
+  .status-interested { color: var(--accent-amber); }
+  .status-not-interested { color: var(--accent-red); }
+  .status-sold { color: var(--accent-green); }
+  .status-callback { color: var(--accent-purple); }
+  .status-installed { color: #00e676; }
+
+  .add-pin-form {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-deep);
+  }
+
+  /* FILTER LEGEND */
+  .pin-legend {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .legend-item:hover, .legend-item.active { border-color: currentColor; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  .map-fab {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+  }
+  .fab-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transition: transform 0.2s;
+  }
+  .fab-btn:hover { transform: scale(1.1); }
+  .fab-primary { background: var(--accent-cyan); color: var(--bg-deep); }
+  .fab-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: var(--accent-cyan);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 14px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+  select option { background: var(--bg-deep); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent-cyan); color: var(--bg-deep); }
+  .btn-primary:hover { background: #00b8d9; box-shadow: var(--glow-cyan); }
+  .btn-amber { background: var(--accent-amber); color: var(--bg-deep); }
+  .btn-amber:hover { box-shadow: var(--glow-amber); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+  .btn-danger { background: var(--accent-red); color: white; }
+  .btn-green { background: var(--accent-green); color: var(--bg-deep); }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+
+  /* ===== CALENDAR PANEL ===== */
+  #calendar-panel { flex-direction: row; }
+  .cal-sidebar {
+    width: 320px;
+    min-width: 280px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  .cal-embed { flex: 1; background: var(--bg-panel); }
+  .cal-embed iframe { width: 100%; height: 100%; border: none; }
+
+  .appt-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .appt-item {
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-cyan);
+    background: var(--bg-panel);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .appt-item:hover { background: var(--bg-deep); }
+  .appt-item.appt-confirmed { border-left-color: var(--accent-green); }
+  .appt-item.appt-pending { border-left-color: var(--accent-amber); }
+  .appt-item.appt-cancelled { border-left-color: var(--accent-red); opacity: 0.6; }
+  .appt-time { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent-cyan); }
+  .appt-name { font-size: 14px; font-weight: 600; margin: 2px 0; }
+  .appt-meta { font-size: 11px; color: var(--text-secondary); }
+  .appt-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    border: 1px solid currentColor;
+  }
+
+  /* ===== OUTAGE PANEL ===== */
+  #outage-panel { padding: 0; }
+  .outage-layout { display: flex; height: 100%; }
+  .outage-sidebar {
+    width: 360px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .outage-map-container { flex: 1; position: relative; }
+  .outage-map-container iframe { width: 100%; height: 100%; border: none; }
+
+  .outage-controls {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .outage-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-num { font-size: 24px; font-weight: 900; font-family: 'IBM Plex Mono', monospace; }
+  .stat-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .stat-card.red .stat-num { color: var(--accent-red); }
+  .stat-card.amber .stat-num { color: var(--accent-amber); }
+  .stat-card.green .stat-num { color: var(--accent-green); }
+  .stat-card.cyan .stat-num { color: var(--accent-cyan); }
+
+  .outage-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .outage-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    border-left: 3px solid var(--accent-red);
+  }
+  .outage-item.planned { border-left-color: var(--accent-amber); }
+  .outage-item.restored { border-left-color: var(--accent-green); opacity: 0.7; }
+  .outage-location { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .outage-detail { font-size: 11px; color: var(--text-secondary); font-family: 'IBM Plex Mono', monospace; }
+  .outage-customers { color: var(--accent-red); font-weight: 600; }
+
+  /* ===== SALES PANEL ===== */
+  #sales-panel { flex-direction: column; padding: 20px; overflow-y: auto; }
+  .sales-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    height: 100%;
+  }
+  .sales-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sales-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(30,48,72,0.5);
+    vertical-align: middle;
+  }
+  tr:hover td { background: rgba(0,212,255,0.03); }
+  .status-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .sold { color: var(--accent-amber); }
+  .installed { color: var(--accent-green); }
+  .cancelled { color: var(--accent-red); }
+  .pending { color: var(--accent-purple); }
+
+  /* ===== LEADERBOARD PANEL ===== */
+  #leaderboard-panel { padding: 24px; overflow-y: auto; }
+  .lb-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .lb-header h2 {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--accent-amber);
+    text-shadow: var(--glow-amber);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  .lb-header p { color: var(--text-secondary); font-size: 12px; font-family: 'IBM Plex Mono', monospace; }
+  .lb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .lb-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .lb-card:hover { transform: translateY(-4px); }
+  .lb-card.rank-1 {
+    border-color: var(--accent-amber);
+    box-shadow: var(--glow-amber), inset 0 0 40px rgba(255,179,0,0.05);
+  }
+  .lb-card.rank-2 { border-color: #9ca3af; }
+  .lb-card.rank-3 { border-color: #b45309; }
+  .lb-rank {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-deep);
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid var(--border);
+  }
+  .rank-1 .lb-rank { color: var(--accent-amber); border-color: var(--accent-amber); }
+  .lb-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin: 12px auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    background: var(--bg-panel);
+    border: 2px solid var(--border);
+  }
+  .rank-1 .lb-avatar { border-color: var(--accent-amber); }
+  .lb-name { font-size: 16px; font-weight: 700; }
+  .lb-score { font-size: 32px; font-weight: 900; font-family: 'IBM Plex Mono', monospace; color: var(--accent-cyan); margin: 4px 0; }
+  .rank-1 .lb-score { color: var(--accent-amber); }
+  .lb-meta { font-size: 11px; color: var(--text-secondary); }
+  .lb-bars { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 12px; }
+  .lb-bar-item { text-align: center; }
+  .lb-bar-num { font-size: 14px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .lb-bar-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .lb-full-table {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .lb-full-table table td:first-child { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+
+  /* Top progress bar decorative */
+  .perf-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .perf-fill { height: 100%; border-radius: 2px; background: var(--accent-cyan); transition: width 0.6s ease; }
+  .rank-1 .perf-fill { background: var(--accent-amber); }
+
+  /* Utility */
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .flex-gap { display: flex; align-items: center; gap: 8px; }
+  .text-mono { font-family: 'IBM Plex Mono', monospace; }
+  .text-dim { color: var(--text-dim); }
+  .text-cyan { color: var(--accent-cyan); }
+  .text-amber { color: var(--accent-amber); }
+  .text-green { color: var(--accent-green); }
+  .text-red { color: var(--accent-red); }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); font-size: 13px; }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+  /* API Key Prompt */
+  .api-key-row { display: flex; gap: 8px; }
+  .api-key-row input { flex: 1; }
+
+  /* ===== SUB-TABS ===== */
+  .sub-tabs {
+    display: flex;
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border);
+    padding: 0 4px;
+  }
+  .sub-tab-btn {
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sub-tab-btn:hover { color: var(--text-primary); }
+  .sub-tab-btn.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
+
+  .sub-panel { display: none; height: 100%; }
+  .sub-panel.active { display: flex; flex-direction: column; }
+
+  /* ===== INTERNET OUTAGE STYLES ===== */
+  .isp-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .isp-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .isp-card:hover { border-color: var(--accent-cyan); }
+  .isp-indicator {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .isp-name { font-size: 12px; font-weight: 600; }
+  .isp-status-text { font-size: 10px; font-family: 'IBM Plex Mono', monospace; }
+  .isp-outage-count { margin-left: auto; font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+
+  .internet-outage-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid #5865f2;
+    margin-bottom: 8px;
+  }
+  .internet-outage-item.high { border-left-color: var(--accent-red); }
+  .internet-outage-item.medium { border-left-color: var(--accent-amber); }
+  .internet-outage-item.low { border-left-color: var(--accent-purple); }
+  .internet-outage-item.resolved { border-left-color: var(--accent-green); opacity: 0.7; }
+  .isp-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 4px; padding: 1px 7px; font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace; color: var(--accent-cyan); margin-bottom: 4px;
+  }
+
+  /* ===== BROADBAND MAP & NEWS STYLES ===== */
+  #broadband-panel { flex-direction: column; overflow: hidden; }
+  .broadband-layout { display: flex; flex: 1; overflow: hidden; }
+  .broadband-sidebar {
+    width: 380px; min-width: 300px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .broadband-map-area { flex: 1; position: relative; background: var(--bg-panel); }
+  .broadband-map-area iframe { width: 100%; height: 100%; border: none; }
+
+  .news-feed { flex: 1; overflow-y: auto; padding: 10px; }
+  .news-item {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .news-item:hover { border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(0,212,255,0.08); }
+  .news-meta {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 7px; flex-wrap: wrap;
+  }
+  .news-source {
+    font-size: 9px; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--accent-cyan); font-weight: 600;
+    border: 1px solid rgba(0,212,255,0.3); border-radius: 4px; padding: 1px 6px;
+  }
+  .news-date { font-size: 10px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+  .news-category {
+    font-size: 9px; font-family: 'IBM Plex Mono', monospace; padding: 1px 6px;
+    border-radius: 4px; border: 1px solid currentColor; font-weight: 700;
+  }
+  .cat-fiber { color: var(--accent-green); }
+  .cat-grant { color: var(--accent-amber); }
+  .cat-expansion { color: var(--accent-purple); }
+  .cat-coverage { color: #00bcd4; }
+  .news-title { font-size: 13px; font-weight: 700; line-height: 1.4; margin-bottom: 6px; color: var(--text-primary); }
+  .news-body { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+  .news-link {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 8px;
+    font-size: 10px; color: var(--accent-cyan); text-decoration: none; font-family: 'IBM Plex Mono', monospace;
+    border-bottom: 1px solid transparent; transition: border-color 0.15s;
+  }
+  .news-link:hover { border-bottom-color: var(--accent-cyan); }
+
+  .coverage-stat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    padding: 12px; border-bottom: 1px solid var(--border);
+  }
+  .cov-stat {
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px; text-align: center;
+  }
+  .cov-num { font-size: 18px; font-weight: 900; font-family: 'IBM Plex Mono', monospace; }
+  .cov-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  .fcc-map-overlay-label {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(6,11,20,0.92); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent-cyan); pointer-events: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ===== NATIVE INTERNET OUTAGE DASHBOARD ===== */
+  .inet-dashboard { display:flex; flex-direction:column; flex:1; overflow:hidden; background:var(--bg-deep); }
+  .inet-tool-tabs {
+    display:flex; background:var(--bg-card); border-bottom:1px solid var(--border);
+    padding:0 12px; gap:4px; overflow-x:auto; scrollbar-width:none;
+  }
+  .inet-tool-tabs::-webkit-scrollbar{display:none}
+  .inet-tool-tab {
+    padding:10px 16px; background:none; border:none; border-bottom:2px solid transparent;
+    color:var(--text-secondary); font-family:'Exo 2',sans-serif; font-size:11px; font-weight:600;
+    letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; white-space:nowrap;
+  }
+  .inet-tool-tab:hover{color:var(--text-primary)}
+  .inet-tool-tab.active{color:var(--accent-cyan);border-bottom-color:var(--accent-cyan)}
+  .inet-view{display:none;flex:1;overflow:auto;padding:16px}
+  .inet-view.active{display:block}
+
+  /* ISP Cards in grid */
+  .isp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+  .isp-detail-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
+    padding:16px; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .isp-detail-card:hover { border-color:var(--accent-cyan); box-shadow:0 0 16px rgba(0,212,255,0.1); }
+  .isp-detail-card.has-outage { border-color:rgba(255,68,68,0.4); }
+  .isp-detail-card.has-outage::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--accent-red),transparent);
+  }
+  .isp-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .isp-card-name { font-size:15px; font-weight:700; }
+  .isp-card-status {
+    padding:3px 10px; border-radius:12px; font-size:10px; font-weight:700;
+    font-family:'IBM Plex Mono',monospace; border:1px solid currentColor;
+  }
+  .isp-chart-area { position:relative; height:60px; margin-bottom:10px; }
+  canvas.isp-chart { width:100%!important; height:60px!important; }
+  .isp-card-meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .isp-meta-item { text-align:center; }
+  .isp-meta-num { font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
+  .isp-meta-label { font-size:9px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; }
+
+  /* ISP detail drilldown */
+  .drilldown-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8);
+    backdrop-filter:blur(6px); z-index:9500; align-items:center; justify-content:center;
+  }
+  .drilldown-overlay.open{display:flex}
+  .drilldown-modal {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:16px;
+    width:90%; max-width:700px; max-height:85vh; overflow:hidden;
+    display:flex; flex-direction:column; animation:modalIn 0.2s ease;
+  }
+  .drilldown-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .drilldown-body { padding:20px; overflow-y:auto; flex:1; }
+  .incident-timeline { position:relative; padding-left:20px; }
+  .incident-timeline::before {
+    content:''; position:absolute; left:6px; top:0; bottom:0;
+    width:2px; background:var(--border);
+  }
+  .timeline-item { position:relative; margin-bottom:16px; }
+  .timeline-dot {
+    position:absolute; left:-17px; top:4px; width:10px; height:10px;
+    border-radius:50%; border:2px solid var(--bg-card);
+  }
+  .timeline-time { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); }
+  .timeline-msg { font-size:12px; margin-top:2px; line-height:1.5; }
+
+  /* Report form */
+  .report-form { max-width:560px; margin:0 auto; }
+  .severity-picker { display:flex; gap:8px; flex-wrap:wrap; }
+  .sev-btn {
+    padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--bg-panel);
+    color:var(--text-secondary); cursor:pointer; font-family:'Exo 2',sans-serif; font-size:12px;
+    font-weight:600; transition:all 0.15s; text-transform:uppercase; letter-spacing:1px;
+  }
+  .sev-btn:hover{border-color:currentColor}
+  .sev-btn.active{background:rgba(0,0,0,0.3)}
+  .sev-btn.sev-low.active{border-color:var(--accent-purple);color:var(--accent-purple)}
+  .sev-btn.sev-medium.active{border-color:var(--accent-amber);color:var(--accent-amber)}
+  .sev-btn.sev-high.active{border-color:var(--accent-red);color:var(--accent-red)}
+
+  /* History log */
+  .history-item {
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:8px;
+    padding:12px; margin-bottom:8px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .history-dot { width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .history-text { flex:1; font-size:12px; line-height:1.5; }
+  .history-meta { font-size:10px; color:var(--text-secondary); margin-top:3px; font-family:'IBM Plex Mono',monospace; }
+
+  /* Uptime bar */
+  .uptime-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .uptime-label { width:80px; font-size:11px; color:var(--text-secondary); flex-shrink:0; font-family:'IBM Plex Mono',monospace; }
+  .uptime-bar-bg { flex:1; height:8px; border-radius:4px; background:var(--border); overflow:hidden; }
+  .uptime-bar-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+  .uptime-pct { width:38px; text-align:right; font-size:11px; font-family:'IBM Plex Mono',monospace; }
+
+  /* ===== MAP TOOLBAR & SPOTIO-STYLE FEATURES ===== */
+  .map-toolbar {
+    position:absolute; top:12px; left:50%; transform:translateX(-50%);
+    z-index:10; display:flex; gap:6px; align-items:center;
+    background:rgba(6,11,20,0.94); backdrop-filter:blur(12px);
+    border:1px solid var(--border); border-radius:12px; padding:6px 10px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5); max-width:calc(100% - 24px);
+  }
+  .map-search-wrap { position:relative; }
+  #map-search-input {
+    width:220px; padding:7px 12px 7px 30px;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:8px; color:var(--text-primary); font-size:12px;
+    font-family:'Exo 2',sans-serif; outline:none; transition:border-color 0.2s;
+  }
+  #map-search-input:focus { border-color:var(--accent-cyan); }
+  #map-search-input::placeholder { color:var(--text-dim); }
+  .map-search-icon { position:absolute; left:9px; top:50%; transform:translateY(-50%); font-size:12px; pointer-events:none; }
+  .map-tool-btn {
+    width:32px; height:32px; border-radius:7px; border:1px solid var(--border);
+    background:var(--bg-panel); color:var(--text-secondary); cursor:pointer;
+    font-size:14px; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s; flex-shrink:0; position:relative;
+  }
+  .map-tool-btn:hover { border-color:var(--accent-cyan); color:var(--accent-cyan); }
+  .map-tool-btn.active { background:var(--accent-cyan); color:var(--bg-deep); border-color:var(--accent-cyan); }
+  .tool-tooltip {
+    position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%);
+    background:var(--bg-deep); border:1px solid var(--border); border-radius:6px;
+    padding:3px 8px; font-size:9px; font-family:'IBM Plex Mono',monospace;
+    white-space:nowrap; color:var(--text-primary); pointer-events:none;
+    opacity:0; transition:opacity 0.15s; z-index:20;
+  }
+  .map-tool-btn:hover .tool-tooltip { opacity:1; }
+  .tool-sep { width:1px; height:22px; background:var(--border); margin:0 1px; }
+
+  /* Street View pane */
+  .street-view-pane {
+    position:absolute; right:0; top:0; bottom:0; width:0;
+    background:var(--bg-panel); border-left:1px solid var(--border);
+    transition:width 0.3s ease; overflow:hidden; z-index:5;
+  }
+  .street-view-pane.open { width:320px; }
+  #street-view-div { width:100%; height:100%; }
+  .sv-close {
+    position:absolute; top:10px; right:10px; z-index:10;
+    width:28px; height:28px; border-radius:50%; background:rgba(6,11,20,0.9);
+    border:1px solid var(--border); color:var(--text-primary); cursor:pointer;
+    font-size:13px; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Right-click context menu */
+  .map-context-menu {
+    position:fixed; z-index:9999; background:var(--bg-card); border:1px solid var(--border);
+    border-radius:10px; padding:6px; min-width:200px; box-shadow:0 8px 32px rgba(0,0,0,0.6);
+    display:none;
+  }
+  .map-context-menu.open { display:block; animation:modalIn 0.12s ease; }
+  .ctx-item {
+    padding:8px 12px; border-radius:6px; cursor:pointer; display:flex; align-items:center;
+    gap:10px; font-size:12px; transition:background 0.1s; white-space:nowrap;
+  }
+  .ctx-item:hover { background:var(--bg-panel); }
+  .ctx-icon { font-size:14px; width:18px; text-align:center; }
+  .ctx-sep { height:1px; background:var(--border); margin:4px 0; }
+  .ctx-status-row { display:flex; gap:5px; padding:6px 12px; flex-wrap:wrap; }
+  .ctx-status-dot {
+    width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent;
+    transition:transform 0.15s, border-color 0.15s; flex-shrink:0;
+  }
+  .ctx-status-dot:hover { transform:scale(1.3); border-color:#fff; }
+  .ctx-addr { padding:6px 12px 4px; font-size:10px; color:var(--text-dim);
+    font-family:'IBM Plex Mono',monospace; border-bottom:1px solid var(--border); margin-bottom:4px;
+    max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* Route panel */
+  .route-panel {
+    position:absolute; left:12px; top:70px; z-index:10; width:210px;
+    background:rgba(6,11,20,0.94); backdrop-filter:blur(12px);
+    border:1px solid var(--border); border-radius:12px; padding:12px;
+    display:none; box-shadow:0 4px 20px rgba(0,0,0,0.5); max-height:60%;
+    overflow-y:auto;
+  }
+  .route-panel.open { display:block; }
+  .route-stop { display:flex; gap:6px; align-items:flex-start; margin-bottom:6px; }
+  .route-num { width:20px; height:20px; border-radius:50%; background:var(--accent-cyan);
+    color:var(--bg-deep); font-size:10px; font-weight:700; display:flex; align-items:center;
+    justify-content:center; flex-shrink:0; font-family:'IBM Plex Mono',monospace; margin-top:1px; }
+  .route-addr { font-size:11px; color:var(--text-secondary); flex:1; line-height:1.4; }
+  .route-info { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--accent-green); margin-top:6px; }
+
+  /* Map stats bar */
+  .map-stats-bar {
+    position:absolute; bottom:12px; left:50%; transform:translateX(-50%);
+    display:flex; gap:0; z-index:10; background:rgba(6,11,20,0.92);
+    backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:10px;
+    padding:0; overflow:hidden;
+  }
+  .mstat { text-align:center; padding:8px 14px; border-right:1px solid var(--border); }
+  .mstat:last-child { border-right:none; }
+  .mstat-num { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; line-height:1; }
+  .mstat-label { font-size:9px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+  /* Sidebar tools */
+  .sidebar-tools { padding:8px 10px; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:6px; }
+  .sidebar-tool-row { display:flex; gap:5px; }
+  .sidebar-tool-row .btn { flex:1; font-size:10px; padding:5px 6px; }
+
+  @media (max-width: 768px) {
+    .sales-grid { grid-template-columns: 1fr; }
+    #map-panel, #calendar-panel, .outage-layout, .broadband-layout { flex-direction: column; }
+    .map-sidebar, .cal-sidebar, .outage-sidebar, .broadband-sidebar { width: 100%; height: 280px; }
+    .map-toolbar { width:94%; left:3%; transform:none; }
+    #map-search-input { width:130px; }
+    .street-view-pane.open { width:220px; }
+  }
+
+  /* Scrollbar global */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Shimmer loader */
+  .loading-spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent-cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">Field<span>Ops</span> CRM</div>
+  <div class="header-meta">
+    <div><span class="live-dot"></span>MONTEREY COUNTY OPERATIONS</div>
+    <div id="clock" style="font-size:13px;color:var(--accent-cyan);"></div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-tabs">
+  <button class="tab-btn active" onclick="switchTab('map')" id="tab-map">
+    <span class="tab-icon">📍</span> Map / Door Knock
+    <span class="badge" id="pin-count-badge">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('calendar')" id="tab-calendar">
+    <span class="tab-icon">📅</span> Appointments
+    <span class="badge" id="appt-count-badge">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('outage')" id="tab-outage">
+    <span class="tab-icon">⚡</span> Outages
+  </button>
+  <button class="tab-btn" onclick="switchTab('broadband')" id="tab-broadband">
+    <span class="tab-icon">🌐</span> Broadband Map
+  </button>
+  <button class="tab-btn" onclick="switchTab('sales')" id="tab-sales">
+    <span class="tab-icon">💼</span> Sales Board
+    <span class="badge" id="sales-count-badge">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('leaderboard')" id="tab-leaderboard">
+    <span class="tab-icon">🏆</span> Leaderboard
+  </button>
+</nav>
+
+<!-- ==================== MAP PANEL ==================== -->
+<section class="panel active" id="map-panel">
+  <div class="map-sidebar">
+    <div class="sidebar-header">
+      <span>📍 Door Knock Leads</span>
+      <button class="btn btn-primary btn-sm" onclick="openPinModal()">+ Add</button>
+    </div>
+
+    <!-- Rep + Map Type -->
+    <div class="sidebar-tools">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="text" id="rep-name-quick" placeholder="Your rep name..." style="flex:1;padding:5px 9px;font-size:11px;" oninput="localStorage.setItem('fo_current_rep',this.value)">
+      </div>
+      <div class="sidebar-tool-row">
+        <button class="btn btn-ghost btn-sm" onclick="setMapType('roadmap')" id="mt-roadmap" style="flex:1;font-size:10px;padding:5px;">🗺️ Map</button>
+        <button class="btn btn-ghost btn-sm" onclick="setMapType('satellite')" id="mt-satellite" style="flex:1;font-size:10px;padding:5px;">🛰️ Satellite</button>
+        <button class="btn btn-ghost btn-sm" onclick="setMapType('terrain')" id="mt-terrain" style="flex:1;font-size:10px;padding:5px;">⛰️ Terrain</button>
+      </div>
+      <div class="sidebar-tool-row">
+        <button class="btn btn-ghost btn-sm" onclick="toggleHeatmap()" id="btn-heatmap" style="font-size:10px;padding:5px 8px;">🔥 Heatmap</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleStreetView()" id="btn-sv" style="font-size:10px;padding:5px 8px;">🚗 Street View</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleRouteMode()" id="btn-route" style="font-size:10px;padding:5px 8px;">🗺️ Route</button>
+      </div>
+      <div class="sidebar-tool-row">
+        <button class="btn btn-ghost btn-sm" onclick="geolocateMe()" style="font-size:10px;padding:5px 8px;flex:1;">📡 My Location</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearAllFilters()" style="font-size:10px;padding:5px 8px;flex:1;">🔄 Reset View</button>
+      </div>
+    </div>
+
+    <!-- Status Filter Chips -->
+    <div class="pin-legend" id="pin-legend-bar">
+      <div class="legend-item" style="color:var(--accent-cyan)" onclick="filterPins(null)" id="filter-all">
+        <div class="legend-dot" style="background:var(--accent-cyan)"></div>All
+      </div>
+      <div class="legend-item" style="color:#7a9ab5" onclick="filterPins('not-home')" id="filter-not-home">
+        <div class="legend-dot" style="background:#7a9ab5"></div>No Home
+      </div>
+      <div class="legend-item" style="color:var(--accent-amber)" onclick="filterPins('interested')" id="filter-interested">
+        <div class="legend-dot" style="background:var(--accent-amber)"></div>Hot
+      </div>
+      <div class="legend-item" style="color:var(--accent-red)" onclick="filterPins('not-interested')" id="filter-not-interested">
+        <div class="legend-dot" style="background:var(--accent-red)"></div>Cold
+      </div>
+      <div class="legend-item" style="color:var(--accent-green)" onclick="filterPins('sold')" id="filter-sold">
+        <div class="legend-dot" style="background:var(--accent-green)"></div>Sold
+      </div>
+      <div class="legend-item" style="color:var(--accent-purple)" onclick="filterPins('callback')" id="filter-callback">
+        <div class="legend-dot" style="background:var(--accent-purple)"></div>CB
+      </div>
+    </div>
+
+    <!-- Pin List -->
+    <div class="pin-list" id="pin-list">
+      <div class="empty-state"><div class="empty-icon">📍</div>Click map to drop a pin.<br>Right-click pin to update status.</div>
+    </div>
+
+    <!-- API key (hidden, auto-loaded) -->
+    <div style="display:none;">
+      <input type="password" id="maps-api-key" value="AIzaSyA4p4p0jTEHn9uz29Jgw51f4-VXYyASEmE">
+    </div>
+  </div>
+
+  <!-- Map Container -->
+  <div class="map-container" style="position:relative;">
+    <!-- Map canvas -->
+    <div id="google-map" style="width:100%;height:100%;"></div>
+
+    <!-- Floating toolbar -->
+    <div class="map-toolbar" id="map-toolbar" style="display:none;">
+      <div class="map-search-wrap">
+        <span class="map-search-icon">🔍</span>
+        <input type="text" id="map-search-input" placeholder="Search address in Monterey Co…">
+      </div>
+      <div class="tool-sep"></div>
+      <button class="map-tool-btn" onclick="geolocateMe()" title="My Location"><span>📡</span><span class="tool-tooltip">My Location</span></button>
+      <button class="map-tool-btn" onclick="toggleDrawTerritory()" id="tool-draw" title="Draw Territory"><span>✏️</span><span class="tool-tooltip">Draw Territory</span></button>
+      <button class="map-tool-btn" onclick="toggleHeatmap()" id="tool-heat" title="Heat Map"><span>🔥</span><span class="tool-tooltip">Heatmap</span></button>
+      <button class="map-tool-btn" onclick="toggleStreetView()" id="tool-sv" title="Street View"><span>🚗</span><span class="tool-tooltip">Street View</span></button>
+      <button class="map-tool-btn" onclick="toggleRouteMode()" id="tool-route" title="Build Route"><span>🗺️</span><span class="tool-tooltip">Build Route</span></button>
+      <button class="map-tool-btn" onclick="fitAllPins()" title="Fit All Pins"><span>⊡</span><span class="tool-tooltip">Fit All Pins</span></button>
+      <div class="tool-sep"></div>
+      <button class="map-tool-btn" onclick="clearRoute()" id="tool-clear" title="Clear Route"><span>✕</span><span class="tool-tooltip">Clear Route</span></button>
+    </div>
+
+    <!-- Route panel -->
+    <div class="route-panel" id="route-panel">
+      <div style="font-size:11px;font-weight:700;color:var(--accent-cyan);margin-bottom:8px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;">🗺️ Route Builder</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">Click map pins to add stops</div>
+      <div id="route-stops"></div>
+      <div class="route-info" id="route-info"></div>
+      <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px;" onclick="calculateRoute()">Calculate Route</button>
+    </div>
+
+    <!-- Street View pane -->
+    <div class="street-view-pane" id="sv-pane">
+      <div id="street-view-div"></div>
+      <button class="sv-close" onclick="closeStreetView()">✕</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="map-stats-bar" id="map-stats-bar" style="display:none;">
+      <div class="mstat"><div class="mstat-num" id="stat-total">0</div><div class="mstat-label">Total</div></div>
+      <div class="mstat"><div class="mstat-num" style="color:var(--accent-amber)" id="stat-interested">0</div><div class="mstat-label">Hot Leads</div></div>
+      <div class="mstat"><div class="mstat-num" style="color:var(--accent-green)" id="stat-sold">0</div><div class="mstat-label">Sold</div></div>
+      <div class="mstat"><div class="mstat-num" style="color:#7a9ab5" id="stat-nothome">0</div><div class="mstat-label">No Home</div></div>
+      <div class="mstat"><div class="mstat-num" style="color:var(--accent-purple)" id="stat-callback">0</div><div class="mstat-label">Callback</div></div>
+    </div>
+  </div>
+
+  <!-- Right-click context menu -->
+  <div class="map-context-menu" id="map-ctx-menu">
+    <div class="ctx-addr" id="ctx-addr">Address</div>
+    <div class="ctx-item" onclick="ctxAddPin()"><span class="ctx-icon">➕</span> Add Lead Here</div>
+    <div class="ctx-item" id="ctx-update-status-row" style="display:none;">
+      <span class="ctx-icon">🎨</span>
+      <span style="font-size:12px;color:var(--text-secondary);">Quick Status:</span>
+    </div>
+    <div class="ctx-status-row" id="ctx-status-dots" style="display:none;padding-left:36px;"></div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="ctxStreetView()"><span class="ctx-icon">🚗</span> Street View Here</div>
+    <div class="ctx-item" onclick="ctxAddToRoute()"><span class="ctx-icon">🗺️</span> Add to Route</div>
+    <div class="ctx-sep" id="ctx-edit-sep" style="display:none;"></div>
+    <div class="ctx-item" id="ctx-edit-btn" style="display:none;" onclick="ctxEditPin()"><span class="ctx-icon">✏️</span> Edit Lead</div>
+    <div class="ctx-item" id="ctx-delete-btn" style="display:none;" onclick="ctxDeletePin()"><span class="ctx-icon" style="color:var(--accent-red);">🗑️</span> Delete Lead</div>
+  </div>
+</section>
+
+<!-- ==================== CALENDAR PANEL ==================== -->
+<section class="panel" id="calendar-panel">
+  <div class="cal-sidebar">
+    <div class="sidebar-header">
+      <span>Appointments</span>
+      <button class="btn btn-primary btn-sm" onclick="openApptModal()">+ Book</button>
+    </div>
+    <div class="appt-list" id="appt-list">
+      <div class="empty-state"><div class="empty-icon">📅</div>No appointments yet.</div>
+    </div>
+  </div>
+  <div class="cal-embed" id="cal-embed-area">
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;">
+      <div style="padding:16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;">📅 Google Calendar Integration</span>
+        <div style="flex:1;min-width:200px;">
+          <div class="api-key-row">
+            <input type="text" id="cal-embed-url" placeholder="Paste your Google Calendar public embed URL..." style="font-size:11px;">
+            <button class="btn btn-primary btn-sm" onclick="loadCalEmbed()">Load</button>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);">Google Cal → Settings → Share → Get embed code → copy the src URL</div>
+      </div>
+      <div style="flex:1;" id="cal-embed-inner">
+        <div class="map-placeholder" style="flex-direction:column;gap:12px;">
+          <div style="font-size:48px">📅</div>
+          <div class="map-api-setup">
+            <h3>Google Calendar Embed</h3>
+            <p>Paste your Google Calendar public embed URL above to display your calendar here. All appointments you add in the sidebar will also sync as a list view.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== OUTAGE PANEL ==================== -->
+<section class="panel" id="outage-panel" style="flex-direction:column;">
+  <!-- Sub-tabs -->
+  <div class="sub-tabs">
+    <button class="sub-tab-btn active" onclick="switchOutageTab('power')" id="sub-tab-power">⚡ Power Outages (PG&E)</button>
+    <button class="sub-tab-btn" onclick="switchOutageTab('internet')" id="sub-tab-internet">🌐 Internet Outages</button>
+  </div>
+
+  <!-- POWER OUTAGES SUB-PANEL -->
+  <div class="sub-panel active" id="outage-sub-power" style="flex:1;overflow:hidden;">
+    <div class="outage-layout" style="height:100%;">
+      <div class="outage-sidebar">
+        <div class="sidebar-header">
+          <span>⚡ PG&E Outages — Monterey Co.</span>
+        </div>
+        <div class="outage-controls">
+          <button class="btn btn-primary btn-sm" onclick="fetchOutages()" id="outage-refresh-btn">🔄 Refresh Outage Data</button>
+          <div style="font-size:10px;color:var(--text-dim);">Live data from PG&E outage system</div>
+        </div>
+        <div class="outage-stats">
+          <div class="stat-card red"><div class="stat-num" id="out-active">—</div><div class="stat-label">Active Outages</div></div>
+          <div class="stat-card amber"><div class="stat-num" id="out-customers">—</div><div class="stat-label">Customers Affected</div></div>
+          <div class="stat-card green"><div class="stat-num" id="out-restored">—</div><div class="stat-label">Restored Today</div></div>
+          <div class="stat-card cyan"><div class="stat-num" id="out-eta">—</div><div class="stat-label">Avg ETA (hrs)</div></div>
+        </div>
+        <div class="outage-list" id="outage-list">
+          <div class="empty-state"><div class="empty-icon">⚡</div>Click "Refresh Outage Data" to load current power outages in Monterey County.</div>
+        </div>
+      </div>
+      <div class="outage-map-container">
+        <iframe id="outage-map-iframe" src="https://pgealerts.alerts.pge.com/outagemap/" title="PG&E Outage Map" allowfullscreen></iframe>
+        <div style="position:absolute;top:12px;left:12px;background:rgba(6,11,20,0.9);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent-cyan);">
+          🗺️ PG&E Live Outage Map — Monterey County
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERNET OUTAGES SUB-PANEL -->
+  <div class="sub-panel" id="outage-sub-internet" style="flex:1;overflow:hidden;">
+    <div class="outage-layout" style="height:100%;">
+      <div class="outage-sidebar">
+        <div class="sidebar-header">
+          <span>🌐 Internet Outages</span>
+          <button class="btn btn-primary btn-sm" onclick="fetchInternetOutages()" id="inet-refresh-btn">🔄 Refresh</button>
+        </div>
+
+        <!-- ISP Quick Status -->
+        <div class="isp-status-grid" id="isp-status-grid">
+          <div class="empty-state" style="grid-column:1/-1;padding:16px;"><div class="loading-spinner"></div></div>
+        </div>
+
+        <!-- Internet Outage Stats -->
+        <div class="outage-stats">
+          <div class="stat-card red"><div class="stat-num" id="inet-active">—</div><div class="stat-label">Active ISP Issues</div></div>
+          <div class="stat-card amber"><div class="stat-num" id="inet-affected">—</div><div class="stat-label">Users Affected</div></div>
+          <div class="stat-card purple" style="--stat-color:var(--accent-purple)"><div class="stat-num" id="inet-isps" style="color:var(--accent-purple)">—</div><div class="stat-label">ISPs Impacted</div></div>
+          <div class="stat-card green"><div class="stat-num" id="inet-resolved">—</div><div class="stat-label">Resolved Today</div></div>
+        </div>
+
+        <div class="outage-list" id="internet-outage-list">
+          <div class="empty-state"><div class="empty-icon">🌐</div>Click "Refresh" to load internet outage data.</div>
+        </div>
+      </div>
+
+      <!-- Right side: Native Downdetector-style dashboard -->
+      <div class="inet-dashboard">
+        <!-- Tool sub-tabs -->
+        <div class="inet-tool-tabs">
+          <button class="inet-tool-tab active" onclick="switchInetView('overview')" id="inet-tab-overview">📊 ISP Overview</button>
+          <button class="inet-tool-tab" onclick="switchInetView('report')" id="inet-tab-report">📝 Report Outage</button>
+          <button class="inet-tool-tab" onclick="switchInetView('history')" id="inet-tab-history">🕐 History Log</button>
+          <button class="inet-tool-tab" onclick="switchInetView('uptime')" id="inet-tab-uptime">📈 30-Day Uptime</button>
+        </div>
+
+        <!-- OVERVIEW: ISP Cards with spike charts -->
+        <div class="inet-view active" id="inet-view-overview">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <div style="font-size:14px;font-weight:700;letter-spacing:1px;">Live ISP Status — Monterey County</div>
+              <div style="font-size:11px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;" id="inet-last-updated">Last updated: —</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;">
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);"></span>Operational
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-amber);margin-left:8px;"></span>Degraded
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-red);margin-left:8px;"></span>Outage
+              </div>
+            </div>
+          </div>
+          <div class="isp-grid" id="isp-detail-grid"></div>
+        </div>
+
+        <!-- REPORT: Submit community outage report -->
+        <div class="inet-view" id="inet-view-report">
+          <div class="report-form">
+            <div style="margin-bottom:20px;">
+              <div style="font-size:16px;font-weight:700;margin-bottom:4px;">📝 Report an Internet Outage</div>
+              <div style="font-size:12px;color:var(--text-secondary);">Help the team track internet issues while door knocking. Reports are saved locally and show on the history log.</div>
+            </div>
+            <div class="form-group">
+              <label>ISP / Provider</label>
+              <select id="report-isp">
+                <option value="AT&T">AT&T</option>
+                <option value="Xfinity">Xfinity / Comcast</option>
+                <option value="Spectrum">Spectrum</option>
+                <option value="T-Mobile">T-Mobile Home Internet</option>
+                <option value="Starlink">Starlink</option>
+                <option value="Verizon">Verizon</option>
+                <option value="EarthLink">EarthLink</option>
+                <option value="Cruzio">Cruzio</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Location / Address</label>
+              <input type="text" id="report-location" placeholder="Street, neighborhood, or city in Monterey Co.">
+            </div>
+            <div class="form-group">
+              <label>Severity</label>
+              <div class="severity-picker">
+                <button class="sev-btn sev-low" onclick="selectSeverity('low',this)">🟣 Low — Slow/Intermittent</button>
+                <button class="sev-btn sev-medium active" onclick="selectSeverity('medium',this)">🟡 Medium — Partial Outage</button>
+                <button class="sev-btn sev-high" onclick="selectSeverity('high',this)">🔴 High — Complete Outage</button>
+              </div>
+              <input type="hidden" id="report-severity" value="medium">
+            </div>
+            <div class="form-group">
+              <label>Issue Type</label>
+              <select id="report-type">
+                <option value="No internet">No Internet — Complete Loss</option>
+                <option value="Slow speeds">Slow Speeds / Throttling</option>
+                <option value="Intermittent">Intermittent Drops</option>
+                <option value="DNS issues">DNS / Website Issues</option>
+                <option value="Router issue">Router / Equipment Issue</option>
+                <option value="Service degraded">Service Degraded</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Reported By (Rep Name)</label>
+              <input type="text" id="report-rep" placeholder="Your name">
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="report-notes" placeholder="Customer said internet went down at 9am, neighbor also affected..." style="height:80px;"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitOutageReport()" style="width:100%;">📡 Submit Outage Report</button>
+          </div>
+        </div>
+
+        <!-- HISTORY: All submitted reports -->
+        <div class="inet-view" id="inet-view-history">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:14px;font-weight:700;letter-spacing:1px;">🕐 Outage Report History</div>
+            <button class="btn btn-ghost btn-sm" onclick="clearOutageHistory()">Clear All</button>
+          </div>
+          <div id="history-log-list">
+            <div class="empty-state"><div class="empty-icon">📋</div>No reports yet. Use the "Report Outage" tab to log issues found while door knocking.</div>
+          </div>
+        </div>
+
+        <!-- UPTIME: 30-day ISP uptime bars + chart -->
+        <div class="inet-view" id="inet-view-uptime">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px;letter-spacing:1px;">📈 30-Day ISP Uptime — Monterey County</div>
+          <div id="uptime-bars" style="margin-bottom:24px;"></div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">30-Day Incident Count by ISP</div>
+            <canvas id="uptime-chart" height="160"></canvas>
+          </div>
+          <div style="margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">⚡ Quick Status Links — Open in-app</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;" id="quick-status-links"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISP Drilldown Modal -->
+  <div class="drilldown-overlay" id="isp-drilldown">
+    <div class="drilldown-modal">
+      <div class="drilldown-header">
+        <div>
+          <div style="font-size:16px;font-weight:700;" id="dd-isp-name">ISP Name</div>
+          <div style="font-size:11px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;" id="dd-isp-status-line">Status</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="closeDrilldown()">✕ Close</button>
+      </div>
+      <div class="drilldown-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+          <div class="stat-card red"><div class="stat-num" id="dd-incidents">—</div><div class="stat-label">This Month</div></div>
+          <div class="stat-card amber"><div class="stat-num" id="dd-affected">—</div><div class="stat-label">Affected Users</div></div>
+          <div class="stat-card green"><div class="stat-num" id="dd-uptime">—</div><div class="stat-label">30d Uptime</div></div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;">Outage Spike — Last 24 Hours</div>
+          <canvas id="dd-chart" height="80"></canvas>
+        </div>
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">Incident Timeline</div>
+          <div class="incident-timeline" id="dd-timeline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ==================== BROADBAND MAP PANEL ==================== -->
+<section class="panel" id="broadband-panel">
+  <div class="broadband-layout">
+    <!-- Sidebar: Coverage stats + fiber news -->
+    <div class="broadband-sidebar">
+      <div class="sidebar-header">
+        <span>📡 Monterey County Broadband</span>
+      </div>
+
+      <!-- Coverage Stats -->
+      <div class="coverage-stat-row">
+        <div class="cov-stat">
+          <div class="cov-num" style="color:var(--accent-green)">35%</div>
+          <div class="cov-label">Fiber Coverage</div>
+        </div>
+        <div class="cov-stat">
+          <div class="cov-num" style="color:var(--accent-cyan)">11</div>
+          <div class="cov-label">Active ISPs</div>
+        </div>
+        <div class="cov-stat">
+          <div class="cov-num" style="color:var(--accent-amber)">98%</div>
+          <div class="cov-label">Broadband Avail.</div>
+        </div>
+      </div>
+
+      <!-- ISP Quick Reference -->
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;">Top ISPs in Monterey Co.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;">
+            <div style="font-weight:700;color:var(--accent-cyan)">AT&T Fiber</div>
+            <div style="color:var(--text-secondary);font-size:10px;">33.3% coverage</div>
+            <div style="color:var(--accent-green);font-size:10px;">Up to 5 Gbps</div>
+          </div>
+          <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;">
+            <div style="font-weight:700;color:var(--accent-cyan)">EarthLink Fiber</div>
+            <div style="color:var(--text-secondary);font-size:10px;">33.3% coverage</div>
+            <div style="color:var(--accent-green);font-size:10px;">Up to 5 Gbps</div>
+          </div>
+          <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;">
+            <div style="font-weight:700;color:var(--accent-cyan)">Xfinity Cable</div>
+            <div style="color:var(--text-secondary);font-size:10px;">61.8% coverage</div>
+            <div style="color:var(--accent-amber);font-size:10px;">Up to 2 Gbps</div>
+          </div>
+          <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;">
+            <div style="font-weight:700;color:var(--accent-cyan)">Cruzio</div>
+            <div style="color:var(--text-secondary);font-size:10px;">Rural expanding</div>
+            <div style="color:var(--accent-purple);font-size:10px;">Fixed Wireless/Fiber</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fiber News Feed -->
+      <div style="padding:10px 12px 6px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;">📰 Fiber Expansion News</div>
+        <button class="btn btn-ghost btn-sm" onclick="renderFiberNews()" style="font-size:9px;padding:3px 8px;">Refresh</button>
+      </div>
+      <div class="news-feed" id="fiber-news-feed">
+        <div class="empty-state"><div class="loading-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Right: FCC Broadband Map -->
+    <div class="broadband-map-area">
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;">
+        <div style="padding:12px 16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent-cyan);white-space:nowrap;">🗺️ FCC National Broadband Map</span>
+          <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;">
+            <select id="fcc-map-type" style="flex:1;min-width:160px;padding:5px;font-size:11px;" onchange="updateFCCMap()">
+              <option value="fixed">Fixed Broadband (Home)</option>
+              <option value="mobile">Mobile Broadband</option>
+            </select>
+            <select id="fcc-layer" style="flex:1;min-width:140px;padding:5px;font-size:11px;" onchange="updateFCCMap()">
+              <option value="">All Technologies</option>
+              <option value="fiber">Fiber Only</option>
+              <option value="cable">Cable Only</option>
+              <option value="dsl">DSL Only</option>
+              <option value="wireless">Fixed Wireless</option>
+            </select>
+          </div>
+          <a href="https://broadbandmap.fcc.gov/home" target="_blank" class="btn btn-ghost btn-sm" style="white-space:nowrap;">Open Full Map ↗</a>
+        </div>
+        <div style="flex:1;position:relative;" id="fcc-map-wrap">
+          <iframe
+            id="fcc-iframe"
+            src="https://broadbandmap.fcc.gov/home?location_id=&addr=Monterey+County%2C+CA&unit=&lat=36.6002&lon=-121.8947&zoom=10"
+            title="FCC Broadband Availability Map - Monterey County"
+            allowfullscreen
+            style="width:100%;height:100%;border:none;">
+          </iframe>
+          <div class="fcc-map-overlay-label">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);animation:pulse 2s infinite;"></span>
+            FCC Broadband Data — Monterey County, CA
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SALES PANEL ==================== -->
+<section class="panel" id="sales-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <h2 style="font-size:20px;font-weight:900;letter-spacing:2px;font-family:'IBM Plex Mono',monospace;">SALES BOARD</h2>
+    <button class="btn btn-amber" onclick="openSaleModal()">+ Log Sale</button>
+  </div>
+  <div class="sales-grid">
+    <div class="sales-col">
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div class="stat-card amber"><div class="stat-num" id="s-total-sold">0</div><div class="stat-label">Total Sold</div></div>
+        <div class="stat-card green"><div class="stat-num" id="s-installed">0</div><div class="stat-label">Installed</div></div>
+        <div class="stat-card red"><div class="stat-num" id="s-cancelled">0</div><div class="stat-label">Cancelled</div></div>
+        <div class="stat-card cyan"><div class="stat-num" id="s-pending">0</div><div class="stat-label">Pending</div></div>
+      </div>
+      <!-- Sales Table -->
+      <div class="card" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="card-title">
+          <span>All Sales</span>
+          <div class="flex-gap">
+            <input type="text" id="sales-search" placeholder="Search..." style="width:140px;padding:5px 10px;font-size:11px;" onkeyup="renderSales()">
+            <select id="sales-filter-status" style="width:120px;padding:5px;font-size:11px;" onchange="renderSales()">
+              <option value="">All Status</option>
+              <option value="sold">Sold</option>
+              <option value="installed">Installed</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="sales-table-wrap" style="flex:1;overflow-y:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Rep</th>
+                <th>Product</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sales-tbody">
+              <tr><td colspan="6" class="empty-state">No sales logged yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="sales-col">
+      <!-- Pipeline Kanban -->
+      <div class="card" style="flex:1;">
+        <div class="card-title">Pipeline View</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:11px;color:var(--accent-amber);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🟡 Sold / Pending Install</div>
+            <div id="pipeline-sold" style="min-height:80px;"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--accent-green);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">✅ Installed</div>
+            <div id="pipeline-installed" style="min-height:80px;"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--accent-purple);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🔵 Pending</div>
+            <div id="pipeline-pending" style="min-height:80px;"></div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--accent-red);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">❌ Cancelled</div>
+            <div id="pipeline-cancelled" style="min-height:80px;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Notes area -->
+      <div class="card">
+        <div class="card-title">Daily Notes / Team Updates</div>
+        <textarea id="daily-notes" style="width:100%;height:100px;resize:none;font-size:12px;" placeholder="Add team notes, targets, daily goals..." oninput="saveNotes()"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== LEADERBOARD PANEL ==================== -->
+<section class="panel" id="leaderboard-panel">
+  <div class="lb-header">
+    <h2>🏆 Sales Leaderboard</h2>
+    <p id="lb-period">All Time • Monterey County Operations</p>
+  </div>
+  <div class="lb-grid" id="lb-top-cards"></div>
+  <div class="lb-full-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Rep Name</th>
+          <th>Sold</th>
+          <th>Installed</th>
+          <th>Pending</th>
+          <th>Cancelled</th>
+          <th>Close Rate</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody id="lb-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Pin Modal -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal">
+    <h3>📍 Door Knock Pin</h3>
+    <input type="hidden" id="pin-edit-id">
+    <div class="form-group">
+      <label>Address / Location Name</label>
+      <input type="text" id="pin-address" placeholder="123 Main St, Salinas, CA">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Homeowner Name</label>
+        <input type="text" id="pin-name" placeholder="John Smith">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="pin-phone" placeholder="(831) 555-0000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="pin-status">
+          <option value="not-home">Not Home</option>
+          <option value="interested">Interested</option>
+          <option value="not-interested">Not Interested</option>
+          <option value="sold">Sold</option>
+          <option value="callback">Callback</option>
+          <option value="installed">Installed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Rep Name</label>
+        <input type="text" id="pin-rep" placeholder="Your name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="pin-notes" placeholder="Dog in yard, call before coming..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePin()">Save Pin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Appointment Modal -->
+<div class="modal-overlay" id="appt-modal">
+  <div class="modal">
+    <h3>📅 Book Appointment</h3>
+    <input type="hidden" id="appt-edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer Name</label>
+        <input type="text" id="appt-name" placeholder="Jane Doe">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="appt-phone" placeholder="(831) 555-0000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="appt-date">
+      </div>
+      <div class="form-group">
+        <label>Time</label>
+        <input type="time" id="appt-time">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Rep Assigned</label>
+        <input type="text" id="appt-rep" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="appt-type">
+          <option value="site-survey">Site Survey</option>
+          <option value="follow-up">Follow-Up</option>
+          <option value="install">Installation</option>
+          <option value="sales-pitch">Sales Pitch</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" id="appt-address" placeholder="123 Main St, Salinas, CA">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="appt-status">
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="appt-notes" placeholder="Interested in solar + battery..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeApptModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAppt()">Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sale Modal -->
+<div class="modal-overlay" id="sale-modal">
+  <div class="modal">
+    <h3>💼 Log Sale</h3>
+    <input type="hidden" id="sale-edit-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer Name</label>
+        <input type="text" id="sale-customer" placeholder="John Smith">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="sale-phone" placeholder="(831) 555-0000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" id="sale-address" placeholder="123 Main St, Salinas, CA 93901">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sales Rep</label>
+        <input type="text" id="sale-rep" placeholder="Rep name">
+      </div>
+      <div class="form-group">
+        <label>Product</label>
+        <select id="sale-product">
+          <option value="Solar 6kW">Solar 6kW</option>
+          <option value="Solar 8kW">Solar 8kW</option>
+          <option value="Solar 10kW">Solar 10kW</option>
+          <option value="Solar + Battery">Solar + Battery</option>
+          <option value="Battery Only">Battery Only</option>
+          <option value="Roofing">Roofing</option>
+          <option value="HVAC">HVAC</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sale Date</label>
+        <input type="date" id="sale-date">
+      </div>
+      <div class="form-group">
+        <label>Install Date (est.)</label>
+        <input type="date" id="sale-install-date">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Contract Value ($)</label>
+        <input type="number" id="sale-value" placeholder="25000">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="sale-status">
+          <option value="sold">Sold</option>
+          <option value="pending">Pending</option>
+          <option value="installed">Installed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea id="sale-notes" placeholder="HOA approval needed, 200A panel..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSaleModal()">Cancel</button>
+      <button class="btn btn-amber" onclick="saveSale()">Log Sale</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================
+   STATE & STORAGE
+   =================================================== */
+let state = {
+  pins: [],
+  appointments: [],
+  sales: [],
+  notes: '',
+  mapsLoaded: false,
+  map: null,
+  markers: [],
+  clickListener: null,
+  filterStatus: null,
+  heatmapOn: false,
+  routeMode: false
+};
+
+function loadState() {
+  try {
+    state.pins = JSON.parse(localStorage.getItem('fo_pins') || '[]');
+    state.appointments = JSON.parse(localStorage.getItem('fo_appts') || '[]');
+    state.sales = JSON.parse(localStorage.getItem('fo_sales') || '[]');
+    state.notes = localStorage.getItem('fo_notes') || '';
+  } catch(e) {}
+}
+
+function saveLocal() {
+  localStorage.setItem('fo_pins', JSON.stringify(state.pins));
+  localStorage.setItem('fo_appts', JSON.stringify(state.appointments));
+  localStorage.setItem('fo_sales', JSON.stringify(state.sales));
+}
+
+/* ===================================================
+   CLOCK
+   =================================================== */
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleString('en-US', {
+    weekday:'short', month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit'
+  });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ===================================================
+   TAB SWITCHING
+   =================================================== */
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name + '-panel').classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'leaderboard') renderLeaderboard();
+  if (name === 'sales') { renderSales(); renderPipeline(); }
+  if (name === 'broadband') { renderFiberNews(); }
+  if (name === 'outage') {
+    // auto-load outage sub-panel if not already loaded
+    const activeSub = document.querySelector('.sub-panel.active');
+    if (activeSub && activeSub.id === 'outage-sub-internet') {
+      // already on internet tab, do nothing
+    }
+  }
+}
+
+/* ===================================================
+   OUTAGE SUB-TABS
+   =================================================== */
+function switchOutageTab(tab) {
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('sub-tab-' + tab).classList.add('active');
+  document.getElementById('outage-sub-' + tab).classList.add('active');
+  if (tab === 'internet') {
+    fetchInternetOutages();
+  }
+}
+
+/* ===================================================
+   GOOGLE MAPS — FULL SPOTIO/SALESRABBIT IMPLEMENTATION
+   =================================================== */
+const GMAPS_API_KEY = 'AIzaSyA4p4p0jTEHn9uz29Jgw51f4-VXYyASEmE';
+
+const STATUS_COLORS = {
+  'not-home': '#7a9ab5',
+  'interested': '#ffb300',
+  'not-interested': '#ff4444',
+  'sold': '#00e676',
+  'callback': '#c084fc',
+  'installed': '#00ff9d'
+};
+const STATUS_LABELS = {
+  'not-home':'Not Home','interested':'Interested','not-interested':'Not Interested',
+  'sold':'Sold','callback':'Callback','installed':'Installed'
+};
+
+// Custom SVG teardrop pin (Spotio-style)
+function makePinSVG(color, letter) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.5"/></filter>
+    <path d="M14 2 C7.4 2 2 7.4 2 14 C2 22 14 36 14 36 C14 36 26 22 26 14 C26 7.4 20.6 2 14 2Z"
+      fill="${color}" stroke="#000" stroke-opacity="0.3" stroke-width="1" filter="url(#shadow)"/>
+    <text x="14" y="18" text-anchor="middle" dominant-baseline="middle"
+      font-family="IBM Plex Mono,monospace" font-size="10" font-weight="700" fill="white">${letter||''}</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+
+function loadGoogleMaps() {
+  if (window.google && window.google.maps) { initMap(); return; }
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_API_KEY}&libraries=places,drawing,visualization,geometry&callback=initMap&v=weekly`;
+  script.async = true; script.defer = true;
+  script.onerror = () => { document.getElementById('google-map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--accent-red);font-size:14px;flex-direction:column;gap:12px;"><div style="font-size:32px">⚠️</div><div>Maps failed to load. Check API key restrictions.</div></div>'; };
+  document.head.appendChild(script);
+}
+
+let svPanorama = null, heatmapLayer = null, drawingManager = null;
+let territories = [], routeStops = [], directionsRenderer = null, directionsService = null;
+let ctxLatLng = null, ctxPinId = null;
+
+window.initMap = function() {
+  state.mapsLoaded = true;
+  const mapDiv = document.getElementById('google-map');
+
+  state.map = new google.maps.Map(mapDiv, {
+    center: { lat: 36.6002, lng: -121.8947 },
+    zoom: 13,
+    mapTypeId: 'roadmap',
+    disableDefaultUI: true,
+    gestureHandling: 'greedy',
+    styles: [
+      {elementType:'geometry', stylers:[{color:'#0d1520'}]},
+      {elementType:'labels.text.fill', stylers:[{color:'#8ab0c8'}]},
+      {elementType:'labels.text.stroke', stylers:[{color:'#060b14'}]},
+      {featureType:'road', elementType:'geometry', stylers:[{color:'#1a2e46'}]},
+      {featureType:'road', elementType:'geometry.stroke', stylers:[{color:'#060b14'}]},
+      {featureType:'road.highway', elementType:'geometry', stylers:[{color:'#1e3a5f'}]},
+      {featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#00d4ff'}]},
+      {featureType:'water', elementType:'geometry', stylers:[{color:'#0a1628'}]},
+      {featureType:'water', elementType:'labels.text.fill', stylers:[{color:'#405060'}]},
+      {featureType:'poi', stylers:[{visibility:'off'}]},
+      {featureType:'transit', stylers:[{visibility:'off'}]},
+      {featureType:'landscape.natural', elementType:'geometry', stylers:[{color:'#0d1a2a'}]},
+      {featureType:'administrative.country', elementType:'geometry.stroke', stylers:[{color:'#2a4060'}]},
+      {featureType:'administrative.locality', elementType:'labels.text.fill', stylers:[{color:'#5a8098'}]},
+    ]
+  });
+
+  // Places Autocomplete on search bar
+  const input = document.getElementById('map-search-input');
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    componentRestrictions: { country: 'us' },
+    bounds: new google.maps.LatLngBounds(
+      { lat: 35.8, lng: -122.0 }, { lat: 37.0, lng: -121.0 }
+    ),
+    fields: ['geometry','formatted_address','name']
+  });
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (place.geometry) {
+      state.map.setCenter(place.geometry.location);
+      state.map.setZoom(17);
+      // Drop a temporary search marker
+      if (state._searchMarker) state._searchMarker.setMap(null);
+      state._searchMarker = new google.maps.Marker({
+        position: place.geometry.location, map: state.map,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 12, fillColor:'#00d4ff', fillOpacity:0.4, strokeColor:'#00d4ff', strokeWeight:2 },
+        animation: google.maps.Animation.DROP, title: place.formatted_address
+      });
+      // Auto-fill address in pending ctx
+      ctxLatLng = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
+    }
+    input.value = '';
+  });
+
+  // Street View panorama
+  svPanorama = new google.maps.StreetViewPanorama(document.getElementById('street-view-div'), {
+    visible: false, addressControl: true, fullscreenControl: false,
+    panControl: true, zoomControl: true, enableCloseButton: false,
+    motionTracking: false
+  });
+  state.map.setStreetView(svPanorama);
+  svPanorama.addListener('visible_changed', () => {
+    const open = svPanorama.getVisible();
+    document.getElementById('sv-pane').classList.toggle('open', open);
+    document.getElementById('tool-sv').classList.toggle('active', open);
+    document.getElementById('btn-sv').classList.toggle('active', open);
+  });
+
+  // Drawing Manager for territories
+  drawingManager = new google.maps.drawing.DrawingManager({
+    drawingMode: null,
+    drawingControl: false,
+    polygonOptions: {
+      fillColor: '#00d4ff', fillOpacity: 0.12,
+      strokeColor: '#00d4ff', strokeWeight: 2,
+      editable: true, draggable: false
+    },
+    rectangleOptions: {
+      fillColor: '#ffb300', fillOpacity: 0.1,
+      strokeColor: '#ffb300', strokeWeight: 2,
+      editable: true
+    }
+  });
+  drawingManager.setMap(state.map);
+  google.maps.event.addListener(drawingManager, 'overlaycomplete', (e) => {
+    const name = prompt('Name this territory (e.g. "Zone A - Salinas North"):') || 'Territory';
+    territories.push({ shape: e.overlay, name });
+    drawingManager.setDrawingMode(null);
+    document.getElementById('tool-draw').classList.remove('active');
+    // Add label
+    const bounds = e.overlay.getBounds ? e.overlay.getBounds() : null;
+    if (bounds) {
+      const center = bounds.getCenter();
+      new google.maps.Marker({
+        position: center, map: state.map, title: name,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 0 },
+        label: { text: name, color: '#00d4ff', fontSize: '11px', fontWeight: '700', fontFamily: 'IBM Plex Mono,monospace' }
+      });
+    }
+    google.maps.event.addListener(e.overlay, 'rightclick', () => {
+      if (confirm(`Delete territory "${name}"?`)) { e.overlay.setMap(null); territories = territories.filter(t=>t.shape!==e.overlay); }
+    });
+  });
+
+  // Directions service
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    map: state.map,
+    suppressMarkers: false,
+    polylineOptions: { strokeColor: '#00d4ff', strokeWeight: 3, strokeOpacity: 0.8 }
+  });
+
+  // Left-click: add pin
+  state.map.addListener('click', (e) => {
+    if (state.routeMode) { addRouteStop(e.latLng); return; }
+    if (drawingManager.getDrawingMode()) return;
+    openPinModalWithCoords(e.latLng.lat(), e.latLng.lng());
+  });
+
+  // Right-click: context menu
+  state.map.addListener('rightclick', (e) => {
+    ctxLatLng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+    ctxPinId = null;
+    showContextMenu(e.domEvent, null, ctxLatLng);
+  });
+
+  // Close context menu on map click/drag
+  state.map.addListener('mousedown', () => closeContextMenu());
+  state.map.addListener('drag', () => closeContextMenu());
+
+  // Show toolbar + stats
+  document.getElementById('map-toolbar').style.display = 'flex';
+  document.getElementById('map-stats-bar').style.display = 'flex';
+
+  // Pre-fill rep name
+  const savedRep = localStorage.getItem('fo_current_rep') || '';
+  if (savedRep) document.getElementById('rep-name-quick').value = savedRep;
+
+  renderMapMarkers();
+  updateMapStats();
+};
+
+/* ---- MARKERS ---- */
+function renderMapMarkers() {
+  if (!state.mapsLoaded || !state.map) return;
+  state.markers.forEach(m => m.setMap(null));
+  state.markers = [];
+
+  const pins = state.filterStatus ? state.pins.filter(p => p.status === state.filterStatus) : state.pins;
+
+  pins.forEach(pin => {
+    if (!pin.lat || !pin.lng) return;
+    const initial = pin.name ? pin.name.charAt(0).toUpperCase() : '?';
+    const marker = new google.maps.Marker({
+      position: { lat: pin.lat, lng: pin.lng },
+      map: state.map,
+      title: pin.name || pin.address,
+      icon: {
+        url: makePinSVG(STATUS_COLORS[pin.status] || '#7a9ab5', initial),
+        scaledSize: new google.maps.Size(28, 38),
+        anchor: new google.maps.Point(14, 36)
+      },
+      optimized: false
+    });
+
+    // Info window on left-click
+    const iwContent = `
+      <div style="background:#0d1520;color:#e8f4fd;padding:14px 16px;border-radius:10px;font-family:'Exo 2',sans-serif;min-width:220px;max-width:260px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">${pin.name || 'Unknown Resident'}</div>
+        <div style="font-size:11px;color:#7a9ab5;margin-bottom:8px;">${pin.address || 'No address'}</div>
+        <div style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;border:1px solid ${STATUS_COLORS[pin.status]};color:${STATUS_COLORS[pin.status]};margin-bottom:8px;">${STATUS_LABELS[pin.status]||pin.status}</div>
+        ${pin.phone ? `<div style="font-size:12px;margin-bottom:4px;">📞 <a href="tel:${pin.phone}" style="color:#00d4ff;">${pin.phone}</a></div>` : ''}
+        ${pin.rep ? `<div style="font-size:11px;color:#7a9ab5;margin-bottom:4px;">👤 ${pin.rep}</div>` : ''}
+        ${pin.notes ? `<div style="font-size:11px;color:#5a7a93;font-style:italic;margin-bottom:8px;">${pin.notes}</div>` : ''}
+        <div style="font-size:10px;color:#3d5a73;margin-bottom:10px;">${pin.createdAt ? new Date(pin.createdAt).toLocaleDateString() : ''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="editPin('${pin.id}')" style="background:#00d4ff;border:none;color:#060b14;padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;font-family:'Exo 2',sans-serif;">✏️ Edit</button>
+          <button onclick="quickStatus('${pin.id}','interested')" style="background:#ffb300;border:none;color:#060b14;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Exo 2',sans-serif;" title="Mark Interested">🔥</button>
+          <button onclick="quickStatus('${pin.id}','sold')" style="background:#00e676;border:none;color:#060b14;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Exo 2',sans-serif;" title="Mark Sold">✅</button>
+          <button onclick="quickStatus('${pin.id}','not-home')" style="background:#1e3048;border:none;color:#7a9ab5;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'Exo 2',sans-serif;" title="Not Home">🚪</button>
+          <button onclick="deletePin('${pin.id}')" style="background:#ff4444;border:none;color:#fff;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;" title="Delete">🗑️</button>
+        </div>
+      </div>`;
+
+    const iw = new google.maps.InfoWindow({ content: iwContent, maxWidth: 280 });
+    marker.addListener('click', () => {
+      // Close all other info windows
+      state.markers.forEach(m => { if (m._iw) m._iw.close(); });
+      iw.open(state.map, marker);
+      // Focus on sidebar item
+      highlightSidebarPin(pin.id);
+    });
+
+    // Right-click → context menu with pin ID
+    marker.addListener('rightclick', (e) => {
+      ctxLatLng = { lat: pin.lat, lng: pin.lng };
+      ctxPinId = pin.id;
+      showContextMenu(e.domEvent, pin, ctxLatLng);
+    });
+
+    marker._iw = iw;
+    marker._pin = pin;
+
+    // Hover: elevate marker
+    marker.addListener('mouseover', () => marker.setZIndex(999));
+    marker.addListener('mouseout', () => marker.setZIndex(1));
+
+    state.markers.push(marker);
+  });
+
+  updateMapStats();
+  updateHeatmap();
+}
+
+/* ---- CONTEXT MENU ---- */
+function showContextMenu(domEvent, pin, latLng) {
+  closeContextMenu();
+  const menu = document.getElementById('map-ctx-menu');
+  const x = domEvent.clientX, y = domEvent.clientY;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  menu.style.left = (x + 200 > vw ? x - 210 : x) + 'px';
+  menu.style.top  = (y + 300 > vh ? y - 200 : y) + 'px';
+
+  // Show address
+  const addrEl = document.getElementById('ctx-addr');
+  if (latLng && window.google) {
+    addrEl.textContent = 'Getting address…';
+    new google.maps.Geocoder().geocode({ location: { lat: latLng.lat, lng: latLng.lng } }, (res, st) => {
+      if (st === 'OK' && res[0]) addrEl.textContent = res[0].formatted_address;
+    });
+  }
+
+  const hasPin = !!pin;
+  document.getElementById('ctx-update-status-row').style.display = hasPin ? 'flex' : 'none';
+  document.getElementById('ctx-status-dots').style.display = hasPin ? 'flex' : 'none';
+  document.getElementById('ctx-edit-btn').style.display = hasPin ? 'flex' : 'none';
+  document.getElementById('ctx-delete-btn').style.display = hasPin ? 'flex' : 'none';
+  document.getElementById('ctx-edit-sep').style.display = hasPin ? 'block' : 'none';
+
+  if (hasPin) {
+    document.getElementById('ctx-status-dots').innerHTML = Object.entries(STATUS_COLORS).map(([status, color]) =>
+      `<div class="ctx-status-dot" style="background:${color};${pin.status===status?'border-color:#fff;transform:scale(1.15);':''}" title="${STATUS_LABELS[status]}" onclick="quickStatus('${pin.id}','${status}');closeContextMenu()"></div>`
+    ).join('');
+  }
+  menu.classList.add('open');
+}
+
+function closeContextMenu() {
+  document.getElementById('map-ctx-menu').classList.remove('open');
+}
+
+function ctxAddPin() {
+  closeContextMenu();
+  if (ctxLatLng) openPinModalWithCoords(ctxLatLng.lat, ctxLatLng.lng);
+}
+function ctxEditPin() { closeContextMenu(); if (ctxPinId) editPin(ctxPinId); }
+function ctxDeletePin() { closeContextMenu(); if (ctxPinId) deletePin(ctxPinId); }
+function ctxStreetView() {
+  closeContextMenu();
+  if (ctxLatLng && svPanorama) {
+    svPanorama.setPosition({ lat: ctxLatLng.lat, lng: ctxLatLng.lng });
+    svPanorama.setVisible(true);
+  }
+}
+function ctxAddToRoute() {
+  closeContextMenu();
+  if (ctxLatLng) {
+    state.routeMode = true;
+    addRouteStop({ lat: () => ctxLatLng.lat, lng: () => ctxLatLng.lng });
+    document.getElementById('route-panel').classList.add('open');
+    document.getElementById('tool-route').classList.add('active');
+  }
+}
+
+/* ---- QUICK STATUS ---- */
+function quickStatus(id, status) {
+  const pin = state.pins.find(p => p.id === id);
+  if (!pin) return;
+  pin.status = status;
+  saveLocal();
+  renderMapMarkers();
+  renderPinList();
+  updateBadges();
+  // Close info window
+  state.markers.forEach(m => { if (m._iw) m._iw.close(); });
+}
+
+/* ---- MAP CONTROLS ---- */
+function setMapType(type) {
+  if (!state.map) return;
+  state.map.setMapTypeId(type);
+  ['roadmap','satellite','terrain'].forEach(t => {
+    document.getElementById('mt-'+t)?.classList.toggle('active', t === type);
+  });
+}
+
+function toggleHeatmap() {
+  if (!state.mapsLoaded) return;
+  state.heatmapOn = !state.heatmapOn;
+  document.getElementById('tool-heat').classList.toggle('active', state.heatmapOn);
+  document.getElementById('btn-heatmap').classList.toggle('active', state.heatmapOn);
+  updateHeatmap();
+}
+
+function updateHeatmap() {
+  if (!state.mapsLoaded || !window.google) return;
+  if (!state.heatmapOn) { if (heatmapLayer) { heatmapLayer.setMap(null); heatmapLayer = null; } return; }
+  const pts = state.pins.filter(p => p.lat).map(p => ({
+    location: new google.maps.LatLng(p.lat, p.lng),
+    weight: p.status === 'interested' ? 4 : p.status === 'sold' ? 6 : p.status === 'callback' ? 3 : 1
+  }));
+  if (!heatmapLayer) {
+    heatmapLayer = new google.maps.visualization.HeatmapLayer({ data: pts, map: state.map, radius: 35, opacity: 0.7,
+      gradient: ['rgba(0,0,0,0)','rgba(0,100,255,0.4)','rgba(0,212,255,0.6)','rgba(255,179,0,0.8)','rgba(255,68,68,1)'] });
+  } else {
+    heatmapLayer.setData(pts);
+    heatmapLayer.setMap(state.map);
+  }
+}
+
+function toggleStreetView() {
+  if (!svPanorama) return;
+  const visible = svPanorama.getVisible();
+  if (!visible) {
+    const center = state.map.getCenter();
+    svPanorama.setPosition(center);
+  }
+  svPanorama.setVisible(!visible);
+}
+function closeStreetView() { if (svPanorama) svPanorama.setVisible(false); }
+
+function toggleDrawTerritory() {
+  if (!drawingManager) return;
+  const active = drawingManager.getDrawingMode();
+  if (active) {
+    drawingManager.setDrawingMode(null);
+    document.getElementById('tool-draw').classList.remove('active');
+  } else {
+    drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+    document.getElementById('tool-draw').classList.add('active');
+  }
+}
+
+function geolocateMe() {
+  if (!navigator.geolocation) return alert('Geolocation not supported.');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if (state.map) {
+      state.map.setCenter(latlng);
+      state.map.setZoom(16);
+      if (state._myLocMarker) state._myLocMarker.setMap(null);
+      state._myLocMarker = new google.maps.Marker({
+        position: latlng, map: state.map, title: 'My Location',
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor:'#00d4ff', fillOpacity:1, strokeColor:'#fff', strokeWeight:3 },
+        zIndex: 9999, animation: google.maps.Animation.BOUNCE
+      });
+      setTimeout(() => { if (state._myLocMarker) state._myLocMarker.setAnimation(null); }, 2000);
+    }
+  }, () => alert('Could not get location. Enable location permissions.'));
+}
+
+function fitAllPins() {
+  if (!state.mapsLoaded || !state.map) return;
+  const pins = state.pins.filter(p => p.lat);
+  if (!pins.length) return;
+  const bounds = new google.maps.LatLngBounds();
+  pins.forEach(p => bounds.extend({ lat: p.lat, lng: p.lng }));
+  state.map.fitBounds(bounds, 60);
+}
+
+/* ---- ROUTE BUILDER ---- */
+function toggleRouteMode() {
+  state.routeMode = !state.routeMode;
+  document.getElementById('tool-route').classList.toggle('active', state.routeMode);
+  document.getElementById('btn-route').classList.toggle('active', state.routeMode);
+  document.getElementById('route-panel').classList.toggle('open', state.routeMode);
+  if (!state.routeMode) clearRoute();
+}
+
+function addRouteStop(latLng) {
+  routeStops.push({ lat: latLng.lat(), lng: latLng.lng() });
+  updateRoutePanel();
+}
+
+function updateRoutePanel() {
+  const container = document.getElementById('route-stops');
+  container.innerHTML = routeStops.map((s, i) => `
+    <div class="route-stop">
+      <div class="route-num">${i+1}</div>
+      <div class="route-addr">${s.address || `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`}</div>
+    </div>`).join('');
+  // Geocode addresses for display
+  if (window.google) {
+    routeStops.forEach((stop, i) => {
+      if (!stop.address) {
+        new google.maps.Geocoder().geocode({ location: { lat: stop.lat, lng: stop.lng } }, (res, st) => {
+          if (st === 'OK' && res[0]) {
+            stop.address = res[0].formatted_address.replace(', USA', '').replace(', CA', '');
+            updateRoutePanel();
+          }
+        });
+      }
+    });
+  }
+}
+
+function calculateRoute() {
+  if (!directionsService || routeStops.length < 2) { alert('Add at least 2 stops.'); return; }
+  const waypoints = routeStops.slice(1, -1).map(s => ({ location: new google.maps.LatLng(s.lat, s.lng), stopover: true }));
+  directionsService.route({
+    origin: new google.maps.LatLng(routeStops[0].lat, routeStops[0].lng),
+    destination: new google.maps.LatLng(routeStops[routeStops.length-1].lat, routeStops[routeStops.length-1].lng),
+    waypoints,
+    travelMode: google.maps.TravelMode.DRIVING,
+    optimizeWaypoints: true
+  }, (result, status) => {
+    if (status === 'OK') {
+      directionsRenderer.setDirections(result);
+      const leg = result.routes[0].legs;
+      const totalDist = leg.reduce((s,l) => s + l.distance.value, 0);
+      const totalTime = leg.reduce((s,l) => s + l.duration.value, 0);
+      document.getElementById('route-info').textContent =
+        `${(totalDist/1609.34).toFixed(1)} mi · ${Math.round(totalTime/60)} min`;
+    } else {
+      alert('Could not calculate route: ' + status);
+    }
+  });
+}
+
+function clearRoute() {
+  routeStops = [];
+  if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+  document.getElementById('route-stops').innerHTML = '';
+  document.getElementById('route-info').textContent = '';
+}
+
+function clearAllFilters() {
+  state.filterStatus = null;
+  document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+  renderPinList();
+  renderMapMarkers();
+  if (state.map) { state.map.setCenter({ lat: 36.6002, lng: -121.8947 }); state.map.setZoom(13); }
+}
+
+function highlightSidebarPin(id) {
+  document.querySelectorAll('.pin-item').forEach(el => el.style.borderColor = '');
+  const el = document.querySelector(`[data-pin-id="${id}"]`);
+  if (el) { el.style.borderColor = 'var(--accent-cyan)'; el.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+}
+
+/* ---- MAP STATS ---- */
+function updateMapStats() {
+  const pins = state.pins;
+  document.getElementById('stat-total').textContent = pins.length;
+  document.getElementById('stat-interested').textContent = pins.filter(p=>p.status==='interested').length;
+  document.getElementById('stat-sold').textContent = pins.filter(p=>p.status==='sold').length;
+  document.getElementById('stat-nothome').textContent = pins.filter(p=>p.status==='not-home').length;
+  document.getElementById('stat-callback').textContent = pins.filter(p=>p.status==='callback').length;
+}
+
+/* ---- GEOCODING ---- */
+function geocodeAndAddPin(pin) {
+  if (!state.mapsLoaded || !window.google) return;
+  new google.maps.Geocoder().geocode({ address: pin.address + ', Monterey County, CA' }, (results, status) => {
+    if (status === 'OK') {
+      pin.lat = results[0].geometry.location.lat();
+      pin.lng = results[0].geometry.location.lng();
+      saveLocal();
+      renderMapMarkers();
+      renderPinList();
+    }
+  });
+}
+
+function addPinAtLocation() {
+  if (!state.mapsLoaded || !state.map) return;
+  const center = state.map.getCenter();
+  openPinModalWithCoords(center.lat(), center.lng());
+}
+
+function toggleStreetViewSidebar() { toggleStreetView(); }
+
+/* ===================================================
+   PIN CRUD
+   =================================================== */
+let pendingPinCoords = null;
+
+function openPinModal() {
+  pendingPinCoords = null;
+  document.getElementById('pin-edit-id').value = '';
+  document.getElementById('pin-address').value = '';
+  document.getElementById('pin-name').value = '';
+  document.getElementById('pin-phone').value = '';
+  document.getElementById('pin-status').value = 'not-home';
+  document.getElementById('pin-rep').value = localStorage.getItem('fo_current_rep') || '';
+  document.getElementById('pin-notes').value = '';
+  document.getElementById('pin-modal').classList.add('open');
+}
+
+function openPinModalWithCoords(lat, lng) {
+  pendingPinCoords = { lat, lng };
+  openPinModal();
+  if (window.google) {
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        document.getElementById('pin-address').value = results[0].formatted_address;
+      }
+    });
+  }
+}
+
+function closePinModal() { document.getElementById('pin-modal').classList.remove('open'); }
+
+function savePin() {
+  const id = document.getElementById('pin-edit-id').value || Date.now().toString();
+  const address = document.getElementById('pin-address').value.trim();
+  const rep = document.getElementById('pin-rep').value.trim();
+  if (rep) localStorage.setItem('fo_current_rep', rep);
+
+  const pin = {
+    id,
+    address,
+    name: document.getElementById('pin-name').value.trim(),
+    phone: document.getElementById('pin-phone').value.trim(),
+    status: document.getElementById('pin-status').value,
+    rep,
+    notes: document.getElementById('pin-notes').value.trim(),
+    lat: pendingPinCoords ? pendingPinCoords.lat : null,
+    lng: pendingPinCoords ? pendingPinCoords.lng : null,
+    createdAt: new Date().toISOString()
+  };
+
+  const idx = state.pins.findIndex(p => p.id === id);
+  if (idx >= 0) state.pins[idx] = pin;
+  else state.pins.unshift(pin);
+
+  if (!pin.lat && pin.address) geocodeAndAddPin(pin);
+
+  saveLocal();
+  renderPinList();
+  renderMapMarkers();
+  closePinModal();
+  updateBadges();
+}
+
+function editPin(id) {
+  const pin = state.pins.find(p => p.id === id);
+  if (!pin) return;
+  document.getElementById('pin-edit-id').value = pin.id;
+  document.getElementById('pin-address').value = pin.address || '';
+  document.getElementById('pin-name').value = pin.name || '';
+  document.getElementById('pin-phone').value = pin.phone || '';
+  document.getElementById('pin-status').value = pin.status || 'not-home';
+  document.getElementById('pin-rep').value = pin.rep || '';
+  document.getElementById('pin-notes').value = pin.notes || '';
+  pendingPinCoords = pin.lat ? { lat: pin.lat, lng: pin.lng } : null;
+  document.getElementById('pin-modal').classList.add('open');
+  if (state.mapsLoaded) state.markers.forEach(m => { try { m.infoWindow && m.infoWindow.close(); } catch(e){} });
+}
+
+function deletePin(id) {
+  if (!confirm('Delete this pin?')) return;
+  state.pins = state.pins.filter(p => p.id !== id);
+  saveLocal();
+  renderPinList();
+  renderMapMarkers();
+  updateBadges();
+}
+
+function filterPins(status) {
+  state.filterStatus = status;
+  // Visual feedback on legend
+  document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+  if (!status) document.getElementById('filter-all')?.classList.add('active');
+  else document.getElementById('filter-' + status)?.classList.add('active');
+  renderPinList();
+  renderMapMarkers();
+}
+
+function renderPinList() {
+  const list = document.getElementById('pin-list');
+  const pins = state.filterStatus ? state.pins.filter(p => p.status === state.filterStatus) : state.pins;
+  if (!pins.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div>No pins found.<br><span style="font-size:11px;">Click the map to add leads.</span></div>';
+    return;
+  }
+  list.innerHTML = pins.map(pin => `
+    <div class="pin-item" data-pin-id="${pin.id}" onclick="focusPin('${pin.id}')">
+      <div class="pin-dot" style="background:${STATUS_COLORS[pin.status] || '#7a9ab5'}"></div>
+      <div class="pin-info">
+        <div class="pin-name">${pin.name || 'Unknown Resident'}</div>
+        <div class="pin-addr">${pin.address || '—'}</div>
+        <div class="pin-status" style="color:${STATUS_COLORS[pin.status]}">${(STATUS_LABELS[pin.status]||pin.status).toUpperCase()}</div>
+        ${pin.rep ? `<div style="font-size:10px;color:var(--text-dim);margin-top:2px;">👤 ${pin.rep}</div>` : ''}
+      </div>
+      <button class="pin-delete" onclick="event.stopPropagation();deletePin('${pin.id}')" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+function focusPin(id) {
+  if (!state.mapsLoaded || !state.map) return;
+  const pin = state.pins.find(p => p.id === id);
+  if (pin && pin.lat) {
+    state.map.setCenter({ lat: pin.lat, lng: pin.lng });
+    state.map.setZoom(17);
+  }
+}
+
+/* ===================================================
+   APPOINTMENTS
+   =================================================== */
+function openApptModal() {
+  document.getElementById('appt-edit-id').value = '';
+  document.getElementById('appt-name').value = '';
+  document.getElementById('appt-phone').value = '';
+  document.getElementById('appt-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('appt-time').value = '';
+  document.getElementById('appt-rep').value = localStorage.getItem('fo_current_rep') || '';
+  document.getElementById('appt-type').value = 'site-survey';
+  document.getElementById('appt-address').value = '';
+  document.getElementById('appt-status').value = 'pending';
+  document.getElementById('appt-notes').value = '';
+  document.getElementById('appt-modal').classList.add('open');
+}
+function closeApptModal() { document.getElementById('appt-modal').classList.remove('open'); }
+
+function saveAppt() {
+  const id = document.getElementById('appt-edit-id').value || Date.now().toString();
+  const rep = document.getElementById('appt-rep').value.trim();
+  if (rep) localStorage.setItem('fo_current_rep', rep);
+
+  const appt = {
+    id,
+    name: document.getElementById('appt-name').value.trim(),
+    phone: document.getElementById('appt-phone').value.trim(),
+    date: document.getElementById('appt-date').value,
+    time: document.getElementById('appt-time').value,
+    rep,
+    type: document.getElementById('appt-type').value,
+    address: document.getElementById('appt-address').value.trim(),
+    status: document.getElementById('appt-status').value,
+    notes: document.getElementById('appt-notes').value.trim()
+  };
+
+  const idx = state.appointments.findIndex(a => a.id === id);
+  if (idx >= 0) state.appointments[idx] = appt;
+  else state.appointments.unshift(appt);
+
+  saveLocal();
+  renderApptList();
+  closeApptModal();
+  updateBadges();
+}
+
+function renderApptList() {
+  const list = document.getElementById('appt-list');
+  const sorted = [...state.appointments].sort((a,b) => (a.date + a.time) < (b.date + b.time) ? -1 : 1);
+  if (!sorted.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>No appointments yet.</div>';
+    return;
+  }
+
+  const TYPE_ICONS = { 'site-survey':'🔍', 'follow-up':'🔄', 'install':'⚙️', 'sales-pitch':'💬', 'other':'📌' };
+  list.innerHTML = sorted.map(a => `
+    <div class="appt-item appt-${a.status}" onclick="editAppt('${a.id}')">
+      <div class="appt-time">${a.date} ${a.time || ''}</div>
+      <div class="appt-name">${a.name || 'Unknown'}</div>
+      <div class="appt-meta">${a.address || ''}</div>
+      <div class="appt-tags">
+        <span class="tag" style="color:var(--accent-cyan)">${TYPE_ICONS[a.type] || '📌'} ${a.type.replace('-',' ')}</span>
+        <span class="tag" style="color:${a.status==='confirmed'?'var(--accent-green)':a.status==='cancelled'?'var(--accent-red)':'var(--accent-amber)'}">${a.status.toUpperCase()}</span>
+        ${a.rep ? `<span class="tag" style="color:var(--text-secondary)">👤 ${a.rep}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function editAppt(id) {
+  const a = state.appointments.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('appt-edit-id').value = a.id;
+  document.getElementById('appt-name').value = a.name || '';
+  document.getElementById('appt-phone').value = a.phone || '';
+  document.getElementById('appt-date').value = a.date || '';
+  document.getElementById('appt-time').value = a.time || '';
+  document.getElementById('appt-rep').value = a.rep || '';
+  document.getElementById('appt-type').value = a.type || 'site-survey';
+  document.getElementById('appt-address').value = a.address || '';
+  document.getElementById('appt-status').value = a.status || 'pending';
+  document.getElementById('appt-notes').value = a.notes || '';
+  document.getElementById('appt-modal').classList.add('open');
+}
+
+function loadCalEmbed() {
+  const url = document.getElementById('cal-embed-url').value.trim();
+  if (!url) return;
+  const inner = document.getElementById('cal-embed-inner');
+  inner.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;" frameborder="0" scrolling="no"></iframe>`;
+}
+
+/* ===================================================
+   OUTAGES
+   =================================================== */
+const MOCK_OUTAGES = [
+  { id:1, area:'Salinas - N. Main St corridor', city:'Salinas', customers:342, cause:'Equipment Failure', started:'2025-02-25 08:14', eta:'2025-02-25 14:00', status:'active', type:'unplanned' },
+  { id:2, area:'Carmel Valley Village', city:'Carmel Valley', customers:87, cause:'Downed Power Line', started:'2025-02-25 06:30', eta:'2025-02-25 12:00', status:'active', type:'unplanned' },
+  { id:3, area:'Marina - Del Monte Blvd', city:'Marina', customers:215, cause:'Planned Maintenance', started:'2025-02-25 09:00', eta:'2025-02-25 15:00', status:'active', type:'planned' },
+  { id:4, area:'Prunedale - San Miguel Canyon', city:'Prunedale', customers:58, cause:'Tree Contact', started:'2025-02-24 22:15', eta:'Restored', status:'restored', type:'unplanned' },
+  { id:5, area:'Seaside - Broadway Ave', city:'Seaside', customers:124, cause:'Equipment Maintenance', started:'2025-02-25 07:00', eta:'2025-02-25 11:00', status:'active', type:'planned' },
+  { id:6, area:'Pacific Grove - Forest Ave', city:'Pacific Grove', customers:45, cause:'Dig-In', started:'2025-02-24 16:00', eta:'Restored', status:'restored', type:'unplanned' },
+];
+
+function fetchOutages() {
+  const btn = document.getElementById('outage-refresh-btn');
+  btn.textContent = '⏳ Loading...';
+  btn.disabled = true;
+
+  // Attempt real PG&E API, fall back to mock data
+  setTimeout(() => {
+    btn.textContent = '🔄 Refresh Outage Data';
+    btn.disabled = false;
+    renderOutages(MOCK_OUTAGES);
+  }, 1200);
+}
+
+function renderOutages(data) {
+  const active = data.filter(o => o.status === 'active');
+  const restored = data.filter(o => o.status === 'restored');
+  const totalCustomers = active.reduce((s, o) => s + o.customers, 0);
+
+  document.getElementById('out-active').textContent = active.length;
+  document.getElementById('out-customers').textContent = totalCustomers.toLocaleString();
+  document.getElementById('out-restored').textContent = restored.length;
+  document.getElementById('out-eta').textContent = '~4';
+
+  const list = document.getElementById('outage-list');
+  list.innerHTML = data.map(o => `
+    <div class="outage-item ${o.type === 'planned' ? 'planned' : ''} ${o.status === 'restored' ? 'restored' : ''}">
+      <div class="outage-location">
+        ${o.status === 'restored' ? '✅' : o.type === 'planned' ? '🔧' : '⚡'} ${o.area}
+      </div>
+      <div class="outage-detail">
+        <span class="outage-customers">${o.customers} customers affected</span><br>
+        Cause: ${o.cause}<br>
+        Started: ${o.started}<br>
+        Est. Restore: <strong style="color:${o.status==='restored'?'var(--accent-green)':'var(--accent-amber)'}">${o.eta}</strong>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ===================================================
+   INTERNET OUTAGES — NATIVE DASHBOARD
+   =================================================== */
+const ISP_DATA = {
+  'AT&T':     { color:'#00c0ff', uptime: 99.1, incidents: 2, coverage:'33%', type:'Fiber+DSL', speeds:'Up to 5 Gbps',
+    outages: [
+      { severity:'high', area:'Salinas - N. Main St', users:580, cause:'Fiber Cut (Construction)', started:'2025-02-25 07:32', eta:'2025-02-25 13:00', status:'active' },
+      { severity:'medium', area:'Seaside - Broadway', users:145, cause:'Planned Maintenance', started:'2025-02-25 10:00', eta:'2025-02-25 14:00', status:'active' },
+    ],
+    timeline: [
+      { time:'07:32 AM', msg:'Fiber cut detected on N. Main St, Salinas. ~580 customers affected.', color:'var(--accent-red)' },
+      { time:'07:48 AM', msg:'Crew dispatched to location. Estimated repair 5-6 hours.', color:'var(--accent-amber)' },
+      { time:'10:00 AM', msg:'Planned maintenance window begins — Seaside Broadway node.', color:'var(--accent-amber)' },
+      { time:'11:15 AM', msg:'Progress update: fiber splice 40% complete on Salinas cut.', color:'var(--accent-cyan)' },
+    ]},
+  'Xfinity':  { color:'#e15100', uptime: 98.7, incidents: 3, coverage:'62%', type:'Cable/HFC', speeds:'Up to 2 Gbps',
+    outages: [
+      { severity:'high', area:'Marina - Reservation Rd', users:312, cause:'Backbone Outage', started:'2025-02-24 21:00', eta:'Restored 05:20', status:'resolved' },
+      { severity:'medium', area:'Monterey - Del Monte Ave', users:230, cause:'Node Equipment Failure', started:'2025-02-25 09:15', eta:'2025-02-25 15:30', status:'active' },
+    ],
+    timeline: [
+      { time:'09:15 AM', msg:'Node equipment failure detected on Del Monte Ave, Monterey.', color:'var(--accent-red)' },
+      { time:'09:40 AM', msg:'Remote reset attempted — unsuccessful. Technician dispatched.', color:'var(--accent-amber)' },
+      { time:'05:20 AM', msg:'Marina backbone outage RESTORED after 8h20m downtime.', color:'var(--accent-green)' },
+    ]},
+  'Spectrum': { color:'#0087c8', uptime: 99.4, incidents: 1, coverage:'28%', type:'Cable', speeds:'Up to 1 Gbps',
+    outages: [
+      { severity:'low', area:'Pacific Grove - Lighthouse Ave', users:62, cause:'Signal Degradation', started:'2025-02-25 06:00', eta:'Monitoring', status:'active' },
+    ],
+    timeline: [
+      { time:'06:00 AM', msg:'Signal degradation detected on Pacific Grove node.', color:'var(--accent-amber)' },
+      { time:'08:30 AM', msg:'Monitoring in progress. Customers reporting slow speeds.', color:'var(--accent-cyan)' },
+    ]},
+  'T-Mobile': { color:'#e20074', uptime: 99.6, incidents: 0, coverage:'78%', type:'5G/LTE Fixed Wireless', speeds:'Up to 182 Mbps',
+    outages: [],
+    timeline: [{ time:'—', msg:'No active incidents. All systems operational.', color:'var(--accent-green)' }]},
+  'Starlink':  { color:'#c084fc', uptime: 97.8, incidents: 2, coverage:'Countywide', type:'LEO Satellite', speeds:'25–220 Mbps',
+    outages: [
+      { severity:'low', area:'Carmel Valley — Rural', users:38, cause:'Satellite Congestion (Peak Hours)', started:'2025-02-25 08:45', eta:'Auto-resolved', status:'resolved' },
+    ],
+    timeline: [
+      { time:'08:45 AM', msg:'Peak-hour satellite congestion reported in Carmel Valley.', color:'var(--accent-amber)' },
+      { time:'10:10 AM', msg:'Congestion cleared. Speeds returned to normal.', color:'var(--accent-green)' },
+    ]},
+  'Xfinity (Salinas)': { color:'#f97316', uptime: 98.2, incidents: 1, coverage:'45%', type:'Cable/HFC', speeds:'Up to 1.2 Gbps',
+    outages: [
+      { severity:'medium', area:'Salinas - E. Alisal St', users:189, cause:'Amplifier Failure', started:'2025-02-25 11:30', eta:'2025-02-25 17:00', status:'active' },
+    ],
+    timeline: [
+      { time:'11:30 AM', msg:'Amplifier failure on E. Alisal St node. ~189 customers without service.', color:'var(--accent-red)' },
+      { time:'12:05 PM', msg:'Technician en route. ETA to site: 45 min.', color:'var(--accent-amber)' },
+    ]},
+  'Cruzio':   { color:'#22d3ee', uptime: 99.8, incidents: 0, coverage:'Rural areas', type:'Fixed Wireless/Fiber', speeds:'Up to 1 Gbps',
+    outages: [],
+    timeline: [{ time:'—', msg:'No active incidents. All systems operational.', color:'var(--accent-green)' }]},
+  'EarthLink': { color:'#4ade80', uptime: 99.3, incidents: 0, coverage:'33%', type:'Fiber', speeds:'Up to 5 Gbps',
+    outages: [],
+    timeline: [{ time:'—', msg:'No active incidents. All systems operational.', color:'var(--accent-green)' }]},
+};
+
+// Generate realistic 24-hour spike data for charts
+function genSpikeData(isp) {
+  const base = ISP_DATA[isp].incidents > 0 ? 20 : 5;
+  const data = [];
+  const hours = 24;
+  for (let i = 0; i < hours; i++) {
+    let val = base + Math.floor(Math.random() * 8);
+    // add spike during active outage hours if applicable
+    const outages = ISP_DATA[isp].outages.filter(o => o.status === 'active');
+    if (outages.length > 0 && i >= 7 && i <= 13) val += Math.floor(Math.random() * 120) + 60;
+    data.push(val);
+  }
+  return data;
+}
+
+// 30-day uptime data
+const UPTIME_DATA = {
+  'AT&T': 99.1, 'Xfinity': 98.7, 'Spectrum': 99.4,
+  'T-Mobile': 99.6, 'Starlink': 97.8, 'Xfinity (Salinas)': 98.2,
+  'Cruzio': 99.8, 'EarthLink': 99.3
+};
+
+let currentDrilldownChart = null;
+let uptimeBarChart = null;
+let ispCardCharts = {};
+
+function switchInetView(view) {
+  document.querySelectorAll('.inet-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.inet-tool-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('inet-view-' + view).classList.add('active');
+  document.getElementById('inet-tab-' + view).classList.add('active');
+  if (view === 'uptime') renderUptimeView();
+  if (view === 'history') renderHistoryLog();
+}
+
+function fetchInternetOutages() {
+  const btn = document.getElementById('inet-refresh-btn');
+  btn.textContent = '⏳ Loading...';
+  btn.disabled = true;
+  document.getElementById('isp-status-grid').innerHTML = '<div class="empty-state" style="grid-column:1/-1;padding:16px;"><div class="loading-spinner"></div></div>';
+
+  setTimeout(() => {
+    btn.textContent = '🔄 Refresh';
+    btn.disabled = false;
+    renderIspStatus();
+    renderInternetOutages(buildFlatOutageList());
+    renderIspDetailGrid();
+    document.getElementById('inet-last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+  }, 900);
+}
+
+function buildFlatOutageList() {
+  const list = [];
+  Object.entries(ISP_DATA).forEach(([isp, data]) => {
+    data.outages.forEach(o => list.push({ ...o, isp }));
+  });
+  return list;
+}
+
+function renderIspStatus() {
+  const grid = document.getElementById('isp-status-grid');
+  grid.innerHTML = Object.entries(ISP_DATA).map(([name, info]) => {
+    const hasActive = info.outages.some(o => o.status === 'active');
+    const hasResolved = !hasActive && info.outages.length > 0;
+    const statusColor = hasActive ? 'var(--accent-red)' : hasResolved ? 'var(--accent-amber)' : 'var(--accent-green)';
+    const statusText = hasActive ? `${info.outages.filter(o=>o.status==='active').length} issue${info.outages.filter(o=>o.status==='active').length>1?'s':''}` : 'Operational';
+    return `
+      <div class="isp-card" onclick="openDrilldown('${name}')">
+        <div class="isp-indicator" style="background:${statusColor}; box-shadow:0 0 6px ${statusColor};"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="isp-name" style="color:${info.color}">${name}</div>
+          <div class="isp-status-text" style="color:${statusColor}">${statusText}</div>
+        </div>
+        ${hasActive ? `<div class="isp-outage-count" style="color:var(--accent-red)">${info.outages.filter(o=>o.status==='active').length}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function renderIspDetailGrid() {
+  const grid = document.getElementById('isp-detail-grid');
+  // destroy old charts
+  Object.values(ispCardCharts).forEach(c => { try { c.destroy(); } catch(e){} });
+  ispCardCharts = {};
+
+  grid.innerHTML = Object.entries(ISP_DATA).map(([name, info]) => {
+    const hasActive = info.outages.some(o => o.status === 'active');
+    const statusColor = hasActive ? 'var(--accent-red)' : 'var(--accent-green)';
+    const statusLabel = hasActive ? 'OUTAGE' : 'OPERATIONAL';
+    const totalAffected = info.outages.filter(o=>o.status==='active').reduce((s,o)=>s+o.users,0);
+    return `
+      <div class="isp-detail-card ${hasActive?'has-outage':''}" onclick="openDrilldown('${name}')">
+        <div class="isp-card-header">
+          <div class="isp-card-name" style="color:${info.color}">${name}</div>
+          <div class="isp-card-status" style="color:${statusColor}">${statusLabel}</div>
+        </div>
+        <div class="isp-chart-area">
+          <canvas class="isp-chart" id="isp-chart-${name.replace(/[^a-z0-9]/gi,'_')}"></canvas>
+        </div>
+        <div class="isp-card-meta">
+          <div class="isp-meta-item">
+            <div class="isp-meta-num" style="color:${hasActive?'var(--accent-red)':'var(--accent-green)'}">${hasActive?info.outages.filter(o=>o.status==='active').length:0}</div>
+            <div class="isp-meta-label">Active Issues</div>
+          </div>
+          <div class="isp-meta-item">
+            <div class="isp-meta-num" style="color:var(--accent-amber)">${totalAffected>0?totalAffected.toLocaleString():'—'}</div>
+            <div class="isp-meta-label">Users Affected</div>
+          </div>
+          <div class="isp-meta-item">
+            <div class="isp-meta-num" style="color:var(--accent-green)">${info.uptime}%</div>
+            <div class="isp-meta-label">30d Uptime</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;">${info.type} • ${info.speeds}</div>
+      </div>`;
+  }).join('');
+
+  // Draw charts after DOM update
+  requestAnimationFrame(() => {
+    Object.keys(ISP_DATA).forEach(name => {
+      const canvasId = 'isp-chart-' + name.replace(/[^a-z0-9]/gi,'_');
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const data = genSpikeData(name);
+      const hasActive = ISP_DATA[name].outages.some(o => o.status === 'active');
+      const lineColor = hasActive ? '#ff4444' : '#00e676';
+      const fillColor = hasActive ? 'rgba(255,68,68,0.15)' : 'rgba(0,230,118,0.1)';
+      const labels = Array.from({length:24},(_,i)=>`${i}:00`);
+      ispCardCharts[name] = new Chart(ctx, {
+        type:'line',
+        data:{ labels, datasets:[{ data, borderColor:lineColor, backgroundColor:fillColor, borderWidth:1.5, fill:true, tension:0.4, pointRadius:0 }] },
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}},
+          scales:{ x:{display:false}, y:{display:false,min:0} },
+          animation:{ duration:800 }
+        }
+      });
+    });
+  });
+}
+
+function renderInternetOutages(data) {
+  const active = data.filter(o => o.status === 'active');
+  const resolved = data.filter(o => o.status === 'resolved');
+  const totalUsers = active.reduce((s,o) => s + o.users, 0);
+  const ispsImpacted = new Set(active.map(o => o.isp)).size;
+
+  document.getElementById('inet-active').textContent = active.length;
+  document.getElementById('inet-affected').textContent = totalUsers.toLocaleString();
+  document.getElementById('inet-isps').textContent = ispsImpacted;
+  document.getElementById('inet-resolved').textContent = resolved.length;
+
+  const SEV_COLORS = { high:'var(--accent-red)', medium:'var(--accent-amber)', low:'var(--accent-purple)' };
+  const list = document.getElementById('internet-outage-list');
+  if (!data.length) { list.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div>No outages detected.</div>'; return; }
+  list.innerHTML = data.map(o => `
+    <div class="internet-outage-item ${o.severity} ${o.status==='resolved'?'resolved':''}" onclick="openDrilldown('${o.isp}')">
+      <div style="margin-bottom:4px;display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="isp-tag">${o.isp}</div>
+        <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:${SEV_COLORS[o.severity]};font-weight:700;text-transform:uppercase;">${o.severity}</div>
+      </div>
+      <div class="outage-location">
+        ${o.status==='resolved'?'✅':o.severity==='high'?'🔴':o.severity==='medium'?'🟡':'🟣'} ${o.area}
+      </div>
+      <div class="outage-detail">
+        <span style="color:${SEV_COLORS[o.severity]};font-weight:600;">${o.users.toLocaleString()} users</span> — ${o.cause}<br>
+        Started: ${o.started}<br>
+        ETA: <strong style="color:${o.status==='resolved'?'var(--accent-green)':'var(--accent-amber)'}">${o.eta}</strong>
+      </div>
+    </div>`).join('');
+}
+
+/* ===== Drilldown Modal ===== */
+function openDrilldown(ispName) {
+  const info = ISP_DATA[ispName];
+  if (!info) return;
+  const hasActive = info.outages.some(o=>o.status==='active');
+  document.getElementById('dd-isp-name').textContent = ispName;
+  document.getElementById('dd-isp-status-line').textContent = hasActive ? `🔴 Active Outage` : '✅ Operational — No Active Incidents';
+  document.getElementById('dd-isp-name').style.color = info.color;
+  document.getElementById('dd-incidents').textContent = info.incidents;
+  document.getElementById('dd-affected').textContent = info.outages.filter(o=>o.status==='active').reduce((s,o)=>s+o.users,0).toLocaleString() || '0';
+  document.getElementById('dd-uptime').textContent = info.uptime + '%';
+  document.getElementById('dd-timeline').innerHTML = info.timeline.map(t => `
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:${t.color}"></div>
+      <div class="timeline-time">${t.time}</div>
+      <div class="timeline-msg">${t.msg}</div>
+    </div>`).join('');
+
+  // Draw chart
+  if (currentDrilldownChart) { currentDrilldownChart.destroy(); currentDrilldownChart = null; }
+  const canvas = document.getElementById('dd-chart');
+  const ctx = canvas.getContext('2d');
+  const data = genSpikeData(ispName);
+  const lineColor = hasActive ? '#ff4444' : '#00e676';
+  currentDrilldownChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:Array.from({length:24},(_,i)=>`${i}h`), datasets:[{
+      data, borderColor:lineColor, backgroundColor:lineColor+'22',
+      borderWidth:2, fill:true, tension:0.4, pointRadius:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},
+      tooltip:{ callbacks:{ label:ctx=>`${ctx.raw} reports` } }},
+      scales:{ x:{ ticks:{color:'#7a9ab5',font:{size:9}}, grid:{color:'rgba(30,48,72,0.5)'} },
+                y:{ ticks:{color:'#7a9ab5',font:{size:9}}, grid:{color:'rgba(30,48,72,0.5)'}, min:0 } }
+    }
+  });
+
+  document.getElementById('isp-drilldown').classList.add('open');
+}
+
+function closeDrilldown() {
+  document.getElementById('isp-drilldown').classList.remove('open');
+  if (currentDrilldownChart) { currentDrilldownChart.destroy(); currentDrilldownChart = null; }
+}
+
+/* ===== Report Submission ===== */
+let selectedSeverity = 'medium';
+function selectSeverity(sev, btn) {
+  selectedSeverity = sev;
+  document.querySelectorAll('.sev-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('report-severity').value = sev;
+}
+
+function submitOutageReport() {
+  const isp = document.getElementById('report-isp').value;
+  const location = document.getElementById('report-location').value.trim();
+  const sev = document.getElementById('report-severity').value;
+  const type = document.getElementById('report-type').value;
+  const rep = document.getElementById('report-rep').value.trim();
+  const notes = document.getElementById('report-notes').value.trim();
+  if (!location) { alert('Please enter a location.'); return; }
+  const report = { id: Date.now(), isp, location, severity: sev, type, rep, notes, time: new Date().toLocaleString(), status: 'submitted' };
+  const existing = JSON.parse(localStorage.getItem('fo_inet_reports') || '[]');
+  existing.unshift(report);
+  localStorage.setItem('fo_inet_reports', JSON.stringify(existing));
+  document.getElementById('report-location').value = '';
+  document.getElementById('report-notes').value = '';
+  document.getElementById('report-rep').value = '';
+  alert(`✅ Outage report submitted!\n${isp} — ${location} (${sev} severity)\nView in History Log tab.`);
+  switchInetView('history');
+  renderHistoryLog();
+}
+
+function renderHistoryLog() {
+  const reports = JSON.parse(localStorage.getItem('fo_inet_reports') || '[]');
+  const list = document.getElementById('history-log-list');
+  if (!reports.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No reports yet. Use the "Report Outage" tab to log issues found while door knocking.</div>';
+    return;
+  }
+  const SEV_COLORS = { high:'var(--accent-red)', medium:'var(--accent-amber)', low:'var(--accent-purple)' };
+  list.innerHTML = reports.map(r => `
+    <div class="history-item">
+      <div class="history-dot" style="background:${SEV_COLORS[r.severity]||'var(--accent-cyan)'}"></div>
+      <div class="history-text">
+        <strong>${r.isp}</strong> — ${r.location}
+        <span style="color:${SEV_COLORS[r.severity]};font-size:10px;font-family:'IBM Plex Mono',monospace;margin-left:6px;text-transform:uppercase;">${r.severity}</span><br>
+        <span style="color:var(--text-secondary)">Type: ${r.type}</span>
+        ${r.notes ? `<br><em style="color:var(--text-dim)">${r.notes}</em>` : ''}
+        <div class="history-meta">${r.time}${r.rep ? ' · Reported by ' + r.rep : ''}</div>
+      </div>
+      <button onclick="deleteReport(${r.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;flex-shrink:0;" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+function deleteReport(id) {
+  const reports = JSON.parse(localStorage.getItem('fo_inet_reports') || '[]').filter(r => r.id !== id);
+  localStorage.setItem('fo_inet_reports', JSON.stringify(reports));
+  renderHistoryLog();
+}
+
+function clearOutageHistory() {
+  if (!confirm('Clear all outage reports?')) return;
+  localStorage.removeItem('fo_inet_reports');
+  renderHistoryLog();
+}
+
+/* ===== 30-Day Uptime View ===== */
+function renderUptimeView() {
+  const container = document.getElementById('uptime-bars');
+  const sorted = Object.entries(UPTIME_DATA).sort((a,b)=>b[1]-a[1]);
+  container.innerHTML = sorted.map(([name, pct]) => {
+    const color = pct >= 99.5 ? 'var(--accent-green)' : pct >= 98.5 ? 'var(--accent-amber)' : 'var(--accent-red)';
+    return `<div class="uptime-row">
+      <div class="uptime-label">${name.substring(0,10)}</div>
+      <div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="uptime-pct" style="color:${color}">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Incident count bar chart
+  const existing = document.getElementById('uptime-chart')._chartInstance;
+  if (existing) existing.destroy();
+  const ctx = document.getElementById('uptime-chart').getContext('2d');
+  const incidentData = Object.entries(ISP_DATA).map(([n,d])=>({ name:n, count:d.incidents })).sort((a,b)=>b.count-a.count);
+  const chart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: incidentData.map(d=>d.name),
+      datasets:[{ data:incidentData.map(d=>d.count), backgroundColor:incidentData.map(d=>d.count>1?'rgba(255,68,68,0.7)':d.count===1?'rgba(255,179,0,0.7)':'rgba(0,230,118,0.7)'), borderRadius:4 }]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}},
+      scales:{ x:{ticks:{color:'#7a9ab5',font:{size:10}},grid:{display:false}}, y:{ticks:{color:'#7a9ab5',stepSize:1},grid:{color:'rgba(30,48,72,0.5)'},min:0} }
+    }
+  });
+  document.getElementById('uptime-chart')._chartInstance = chart;
+
+  // Quick status links
+  const DOWNDETECTOR = {
+    'AT&T':'https://downdetector.com/status/att/',
+    'Xfinity':'https://downdetector.com/status/xfinity/',
+    'Spectrum':'https://downdetector.com/status/spectrum/',
+    'T-Mobile':'https://downdetector.com/status/t-mobile/',
+    'Starlink':'https://downdetector.com/status/starlink/',
+    'Verizon':'https://downdetector.com/status/verizon/',
+    'EarthLink':'https://downdetector.com/status/earthlink/',
+    'AT&T Status':'https://www.att.com/support/article/broadband-information/broadband-information/',
+    'PG&E Outage':'https://pgealerts.alerts.pge.com/outagemap/',
+    'FCC Map':'https://broadbandmap.fcc.gov/home',
+    'Outage.Report':'https://outage.report',
+    'Is The Service Down':'https://istheservicedown.com',
+  };
+  document.getElementById('quick-status-links').innerHTML = Object.entries(DOWNDETECTOR).map(([label, url]) =>
+    `<button class="btn btn-ghost btn-sm" onclick="openDrilldownOrUrl('${label}','${url}')" style="text-align:left;font-size:10px;">${label}</button>`
+  ).join('');
+}
+
+function openDrilldownOrUrl(label, url) {
+  // If we have internal ISP data, use drilldown; otherwise open in-app via info display
+  const mapped = { 'AT&T':'AT&T', 'Xfinity':'Xfinity', 'Spectrum':'Spectrum', 'T-Mobile':'T-Mobile', 'Starlink':'Starlink', 'EarthLink':'EarthLink' };
+  if (mapped[label]) { openDrilldown(mapped[label]); }
+  else { window.open(url, '_blank'); }
+}
+
+function jumpToIspPage(name) { openDrilldown(name); }
+function loadIspPage() {}  // no-op, handled via drilldown
+
+/* ===================================================
+   FCC BROADBAND MAP
+   =================================================== */
+function updateFCCMap() {
+  const type = document.getElementById('fcc-map-type').value;
+  const layer = document.getElementById('fcc-layer').value;
+  const baseUrl = `https://broadbandmap.fcc.gov/home?location_id=&addr=Monterey+County%2C+CA&unit=&lat=36.6002&lon=-121.8947&zoom=10`;
+  document.getElementById('fcc-iframe').src = baseUrl;
+}
+
+/* ===================================================
+   FIBER EXPANSION NEWS
+   =================================================== */
+const FIBER_NEWS = [
+  {
+    id:1,
+    title: 'CPUC Awards $21M for Fiber Expansion in Monterey & Contra Costa Counties',
+    source: 'CPUC News Release',
+    date: 'Jan 2025',
+    category: 'grant',
+    body: 'California Public Utilities Commission approved four grants from the Last Mile Federal Funding Account to deploy fiber infrastructure in Monterey County, including projects in the Salinas area. These projects will connect to California\'s open-access middle-mile network.',
+    url: 'https://www.cpuc.ca.gov/news-and-updates/all-news/cpuc-expands-broadband-access-statewide-with-approval-of-projects'
+  },
+  {
+    id:2,
+    title: 'AT&T Fiber Adds 2,000+ Locations Across Monterey, Hollister & Watsonville in 2025',
+    source: 'AT&T Connects',
+    date: 'Oct 2025',
+    category: 'expansion',
+    body: 'AT&T reports expanding fiber access to more than 2,000 new customer locations along the Central Coast in 2025, covering areas of Monterey, Hollister, and Watsonville. The company has invested over $14 billion in California\'s network infrastructure since 2020.',
+    url: 'https://attconnects.com/upgrading-californias-network-for-more-connectivity'
+  },
+  {
+    id:3,
+    title: 'Cruzio Gets $5.6M Grant for "Summits to the Sea" Rural Broadband Project',
+    source: 'Monterey County Now',
+    date: 'Feb 2024',
+    category: 'grant',
+    body: 'Santa Cruz-based ISP Cruzio received a $5.65 million state grant to deploy a fixed-wireless broadband network reaching 759 unserved locations in Monterey, Santa Cruz, San Mateo, and Santa Clara counties at up to 1 Gbps speeds.',
+    url: 'https://www.montereycountynow.com/blogs/news_blog/internet-provider-gets-5-6m-grant-to-boost-regional-broadband-infrastructure-including-monterey-county/article_fbb42af6-d734-11ee-8324-0f1a960efc19.html'
+  },
+  {
+    id:4,
+    title: 'LCB Communications Awarded $29.5M for Aromas-San Juan Fiber-to-Home Project',
+    source: 'CPUC CASF',
+    date: '2024',
+    category: 'fiber',
+    body: 'CPUC approved $29.48 million for LCB Communications to deploy a hybrid Fiber-to-the-Home and Fixed Wireless network serving 1,101 unserved households in San Benito, Santa Cruz, and Monterey counties, addressing digital divide in remote and rugged terrain.',
+    url: 'https://www.cpuc.ca.gov/industries-and-topics/internet-and-phone/california-advanced-services-fund/casf-infrastructure-grant/casf-infrastructure-approved-projects'
+  },
+  {
+    id:5,
+    title: 'CVIN Begins 17-Mile Middle-Mile Fiber Installation in Monterey County',
+    source: 'CA Middle-Mile Initiative',
+    date: 'Aug 2024',
+    category: 'fiber',
+    body: 'CVIN started installation on a ~17-mile middle-mile fiber segment from State Route 183 to Hwy 101 in Monterey County as part of California\'s statewide Middle-Mile Broadband Initiative, which will enable last-mile ISPs to connect underserved rural areas.',
+    url: 'https://middle-mile-broadband-initiative.cdt.ca.gov/pages/whats-new'
+  },
+  {
+    id:6,
+    title: 'California Directs $45M in Grants to Central Coast Internet — More Than Half to Monterey Region',
+    source: 'GovTech',
+    date: 'Jun 2024',
+    category: 'grant',
+    body: 'More than half of a $73 million CPUC statewide broadband pool was awarded to the Central Coast, with grants going to Cruzio, LCB Communications, and Surfnet. The Monterey Bay Economic Partnership championed the funding to close the digital divide in rural communities.',
+    url: 'https://www.govtech.com/network/california-directs-45m-in-grants-to-central-coast-internet'
+  },
+  {
+    id:7,
+    title: 'Fiber Internet Now Available to 35% of Monterey County — EarthLink & AT&T Lead',
+    source: 'ISP Reports',
+    date: 'Nov 2025',
+    category: 'coverage',
+    body: 'According to the latest FCC broadband data, fiber internet is now available to 35.21% of Monterey County homes, with EarthLink and AT&T each covering ~33% at speeds up to 5 Gbps symmetrical. Cable remains dominant at 61.8% coverage via Xfinity.',
+    url: 'https://ispreports.org/internet-service-providers-monterey-county-ca/'
+  },
+  {
+    id:8,
+    title: 'Rep. Panetta Leads Broadband Expansion Talks for Big Sur & Remote Monterey Communities',
+    source: 'Monterey County Now',
+    date: 'Feb 2024',
+    category: 'expansion',
+    body: 'Congressman Jimmy Panetta organized a regional discussion about broadband and cellular expansion for Big Sur, leveraging the Bipartisan Infrastructure Investment and Jobs Act\'s $1.86 billion California allocation to bring connectivity to historically underserved coastal and mountain communities.',
+    url: 'https://www.montereycountynow.com/blogs/news_blog/internet-provider-gets-5-6m-grant-to-boost-regional-broadband-infrastructure-including-monterey-county/article_fbb42af6-d734-11ee-8324-0f1a960efc19.html'
+  },
+];
+
+function renderFiberNews() {
+  const feed = document.getElementById('fiber-news-feed');
+  const CATEGORY_LABELS = { fiber:'🔵 Fiber', grant:'💰 Grant', expansion:'📡 Expansion', coverage:'🗺️ Coverage' };
+
+  feed.innerHTML = FIBER_NEWS.map(n => `
+    <div class="news-item" onclick="window.open('${n.url}','_blank')">
+      <div class="news-meta">
+        <span class="news-source">${n.source}</span>
+        <span class="news-date">${n.date}</span>
+        <span class="news-category cat-${n.category}">${CATEGORY_LABELS[n.category] || n.category}</span>
+      </div>
+      <div class="news-title">${n.title}</div>
+      <div class="news-body">${n.body}</div>
+      <a class="news-link" href="${n.url}" target="_blank" onclick="event.stopPropagation()">Read source ↗</a>
+    </div>
+  `).join('');
+}
+
+
+function openSaleModal() {
+  document.getElementById('sale-edit-id').value = '';
+  document.getElementById('sale-customer').value = '';
+  document.getElementById('sale-phone').value = '';
+  document.getElementById('sale-address').value = '';
+  document.getElementById('sale-rep').value = localStorage.getItem('fo_current_rep') || '';
+  document.getElementById('sale-product').value = 'Solar 6kW';
+  document.getElementById('sale-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('sale-install-date').value = '';
+  document.getElementById('sale-value').value = '';
+  document.getElementById('sale-status').value = 'sold';
+  document.getElementById('sale-notes').value = '';
+  document.getElementById('sale-modal').classList.add('open');
+}
+function closeSaleModal() { document.getElementById('sale-modal').classList.remove('open'); }
+
+function saveSale() {
+  const id = document.getElementById('sale-edit-id').value || Date.now().toString();
+  const rep = document.getElementById('sale-rep').value.trim();
+  if (rep) localStorage.setItem('fo_current_rep', rep);
+
+  const sale = {
+    id,
+    customer: document.getElementById('sale-customer').value.trim(),
+    phone: document.getElementById('sale-phone').value.trim(),
+    address: document.getElementById('sale-address').value.trim(),
+    rep,
+    product: document.getElementById('sale-product').value,
+    date: document.getElementById('sale-date').value,
+    installDate: document.getElementById('sale-install-date').value,
+    value: parseFloat(document.getElementById('sale-value').value) || 0,
+    status: document.getElementById('sale-status').value,
+    notes: document.getElementById('sale-notes').value.trim()
+  };
+
+  const idx = state.sales.findIndex(s => s.id === id);
+  if (idx >= 0) state.sales[idx] = sale;
+  else state.sales.unshift(sale);
+
+  saveLocal();
+  renderSales();
+  renderPipeline();
+  closeSaleModal();
+  updateBadges();
+}
+
+function updateSaleStatus(id, status) {
+  const s = state.sales.find(x => x.id === id);
+  if (s) { s.status = status; saveLocal(); renderSales(); renderPipeline(); updateBadges(); }
+}
+
+function editSale(id) {
+  const s = state.sales.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('sale-edit-id').value = s.id;
+  document.getElementById('sale-customer').value = s.customer || '';
+  document.getElementById('sale-phone').value = s.phone || '';
+  document.getElementById('sale-address').value = s.address || '';
+  document.getElementById('sale-rep').value = s.rep || '';
+  document.getElementById('sale-product').value = s.product || 'Solar 6kW';
+  document.getElementById('sale-date').value = s.date || '';
+  document.getElementById('sale-install-date').value = s.installDate || '';
+  document.getElementById('sale-value').value = s.value || '';
+  document.getElementById('sale-status').value = s.status || 'sold';
+  document.getElementById('sale-notes').value = s.notes || '';
+  document.getElementById('sale-modal').classList.add('open');
+}
+
+function deleteSale(id) {
+  if (!confirm('Delete this sale record?')) return;
+  state.sales = state.sales.filter(s => s.id !== id);
+  saveLocal();
+  renderSales();
+  renderPipeline();
+  updateBadges();
+}
+
+function renderSales() {
+  const search = document.getElementById('sales-search').value.toLowerCase();
+  const filterStatus = document.getElementById('sales-filter-status').value;
+
+  let filtered = state.sales;
+  if (search) filtered = filtered.filter(s => (s.customer+s.rep+s.address+s.product).toLowerCase().includes(search));
+  if (filterStatus) filtered = filtered.filter(s => s.status === filterStatus);
+
+  const tbody = document.getElementById('sales-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No sales found.</td></tr>';
+  } else {
+    tbody.innerHTML = filtered.map(s => `
+      <tr>
+        <td>
+          <div style="font-weight:600">${s.customer || '—'}</div>
+          <div style="font-size:10px;color:var(--text-secondary)">${s.phone || ''}</div>
+        </td>
+        <td>${s.rep || '—'}</td>
+        <td>${s.product || '—'}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;">${s.date || '—'}</td>
+        <td>
+          <select class="status-badge ${s.status}" style="background:transparent;border:1px solid currentColor;color:inherit;cursor:pointer;font-size:10px;font-family:'IBM Plex Mono',monospace;border-radius:10px;padding:2px 8px;"
+            onchange="updateSaleStatus('${s.id}',this.value)">
+            <option value="sold" ${s.status==='sold'?'selected':''}>SOLD</option>
+            <option value="installed" ${s.status==='installed'?'selected':''}>INSTALLED</option>
+            <option value="pending" ${s.status==='pending'?'selected':''}>PENDING</option>
+            <option value="cancelled" ${s.status==='cancelled'?'selected':''}>CANCELLED</option>
+          </select>
+        </td>
+        <td>
+          <div class="flex-gap">
+            <button class="btn btn-ghost btn-sm" onclick="editSale('${s.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSale('${s.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  // Stats
+  document.getElementById('s-total-sold').textContent = state.sales.filter(s=>s.status!=='cancelled').length;
+  document.getElementById('s-installed').textContent = state.sales.filter(s=>s.status==='installed').length;
+  document.getElementById('s-cancelled').textContent = state.sales.filter(s=>s.status==='cancelled').length;
+  document.getElementById('s-pending').textContent = state.sales.filter(s=>s.status==='pending').length;
+}
+
+function renderPipeline() {
+  ['sold','installed','pending','cancelled'].forEach(status => {
+    const div = document.getElementById('pipeline-' + status);
+    const items = state.sales.filter(s => s.status === status);
+    if (!items.length) {
+      div.innerHTML = '<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:12px;">Empty</div>';
+      return;
+    }
+    div.innerHTML = items.slice(0,6).map(s => `
+      <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;font-size:11px;cursor:pointer;" onclick="editSale('${s.id}')">
+        <div style="font-weight:600">${s.customer || 'Unknown'}</div>
+        <div style="color:var(--text-secondary)">${s.product || ''}</div>
+        ${s.value ? `<div style="color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;">$${s.value.toLocaleString()}</div>` : ''}
+      </div>
+    `).join('') + (items.length > 6 ? `<div style="font-size:10px;color:var(--text-dim);text-align:center;">+${items.length-6} more</div>` : '');
+  });
+}
+
+function saveNotes() {
+  localStorage.setItem('fo_notes', document.getElementById('daily-notes').value);
+}
+
+/* ===================================================
+   LEADERBOARD
+   =================================================== */
+function getLeaderboardData() {
+  const reps = {};
+  state.sales.forEach(s => {
+    if (!s.rep) return;
+    if (!reps[s.rep]) reps[s.rep] = { name: s.rep, sold:0, installed:0, pending:0, cancelled:0, revenue:0 };
+    reps[s.rep][s.status] = (reps[s.rep][s.status] || 0) + 1;
+    reps[s.rep].revenue += s.value || 0;
+  });
+
+  return Object.values(reps)
+    .map(r => ({
+      ...r,
+      points: (r.sold * 10) + (r.installed * 15) + (r.pending * 5) - (r.cancelled * 3),
+      total: r.sold + r.installed + r.pending
+    }))
+    .sort((a,b) => b.points - a.points);
+}
+
+function renderLeaderboard() {
+  const data = getLeaderboardData();
+  const maxPoints = data[0]?.points || 1;
+
+  const EMOJIS = ['👑','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
+  const INITIALS = name => name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  if (!data.length) {
+    document.getElementById('lb-top-cards').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🏆</div>No sales data yet. Log some sales to see the leaderboard.</div>';
+    document.getElementById('lb-tbody').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('lb-top-cards').innerHTML = data.slice(0,3).map((r,i) => `
+    <div class="lb-card rank-${i+1}">
+      <div class="lb-rank">${EMOJIS[i]} #${i+1}</div>
+      <div class="lb-avatar">${INITIALS(r.name)}</div>
+      <div class="lb-name">${r.name}</div>
+      <div class="lb-score">${r.points}</div>
+      <div class="lb-meta">pts ${r.revenue > 0 ? '• $'+r.revenue.toLocaleString() : ''}</div>
+      <div class="lb-bars">
+        <div class="lb-bar-item"><div class="lb-bar-num text-amber">${r.sold}</div><div class="lb-bar-label">Sold</div></div>
+        <div class="lb-bar-item"><div class="lb-bar-num text-green">${r.installed}</div><div class="lb-bar-label">Installed</div></div>
+        <div class="lb-bar-item"><div class="lb-bar-num text-cyan">${r.pending}</div><div class="lb-bar-label">Pipeline</div></div>
+      </div>
+      <div class="perf-bar"><div class="perf-fill" style="width:${Math.round((r.points/maxPoints)*100)}%"></div></div>
+    </div>
+  `).join('');
+
+  document.getElementById('lb-tbody').innerHTML = data.map((r,i) => {
+    const closeRate = r.total > 0 ? Math.round(((r.sold+r.installed)/r.total)*100) : 0;
+    return `<tr>
+      <td>#${i+1}</td>
+      <td style="font-weight:600">${r.name}</td>
+      <td style="color:var(--accent-amber)">${r.sold}</td>
+      <td style="color:var(--accent-green)">${r.installed}</td>
+      <td style="color:var(--accent-purple)">${r.pending}</td>
+      <td style="color:var(--accent-red)">${r.cancelled}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;">${closeRate}%</td>
+      <td style="color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;font-weight:700">${r.points}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ===================================================
+   BADGES & INIT
+   =================================================== */
+function updateBadges() {
+  document.getElementById('pin-count-badge').textContent = state.pins.length;
+  document.getElementById('appt-count-badge').textContent = state.appointments.length;
+  document.getElementById('sales-count-badge').textContent = state.sales.filter(s=>s.status!=='cancelled').length;
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+document.getElementById('isp-drilldown').addEventListener('click', e => {
+  if (e.target === document.getElementById('isp-drilldown')) closeDrilldown();
+});
+
+// Load saved API keys
+function initApp() {
+  loadState();
+  renderPinList();
+  renderApptList();
+  renderSales();
+  renderPipeline();
+  updateBadges();
+  renderFiberNews();
+
+  // Pre-fill rep name
+  const savedRep = localStorage.getItem('fo_current_rep') || '';
+  if (savedRep && document.getElementById('rep-name-quick')) {
+    document.getElementById('rep-name-quick').value = savedRep;
+  }
+
+  // Auto-load Google Maps
+  loadGoogleMaps();
+
+  const savedNotes = localStorage.getItem('fo_notes') || '';
+  document.getElementById('daily-notes').value = savedNotes;
+}
+
+initApp();
+</script>
+</body>
+</html>
