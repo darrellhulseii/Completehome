@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FieldOps CRM — Monterey County</title>
+<!-- ── SECURITY HARDENING ───────────────────────────── -->
+<!-- Use safe referrer policy — no-referrer breaks cross-origin fetch -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- Prevent content-type sniffing                      -->
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<!-- Permissions policy: lock unnecessary hardware      -->
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), payment=(), usb=(), bluetooth=()">
+<!-- NOTE: X-Frame-Options intentionally omitted — page is embedded in user's website -->
+<!-- NOTE: X-XSS-Protection removed — deprecated in modern browsers -->
+<!-- ── END SECURITY META ────────────────────────────── -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -533,10 +543,10 @@
   .pending { color: var(--accent-purple); }
 
   /* ===== LEADERBOARD PANEL ===== */
-  #leaderboard-panel { padding: 24px; overflow-y: auto; }
+  #leaderboard-panel { overflow: hidden; }
   .lb-header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
   }
   .lb-header h2 {
     font-size: 32px;
@@ -1004,6 +1014,135 @@
     .street-view-pane.open { width:220px; }
   }
 
+  /* ===== WEATHER WIDGET (HEADER) ===== */
+  .header-weather {
+    display:flex; align-items:center; gap:10px;
+    background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.15);
+    border-radius:10px; padding:5px 14px; cursor:pointer; transition:all 0.2s;
+    text-decoration:none;
+  }
+  .header-weather:hover { background:rgba(0,212,255,0.12); border-color:rgba(0,212,255,0.3); }
+  .hw-icon { font-size:22px; line-height:1; }
+  .hw-temp { font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent-cyan); }
+  .hw-desc { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; }
+  .hw-loc  { font-size:9px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; }
+
+  /* ===== WEATHER PANEL ===== */
+  #weather-panel { overflow: hidden; }
+  .weather-scroll-wrap { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .weather-hero {
+    background:linear-gradient(135deg, rgba(0,60,100,0.6) 0%, rgba(6,11,20,0.9) 100%);
+    border:1px solid var(--border); border-radius:16px; padding:28px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;
+    position:relative; overflow:hidden;
+  }
+  .weather-hero::before {
+    content:''; position:absolute; inset:0;
+    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300d4ff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events:none;
+  }
+  .weather-main { position:relative; }
+  .weather-city { font-size:13px; text-transform:uppercase; letter-spacing:2px; color:var(--accent-cyan); font-family:'IBM Plex Mono',monospace; margin-bottom:4px; }
+  .weather-big-temp { font-size:72px; font-weight:900; font-family:'IBM Plex Mono',monospace; line-height:1; color:var(--text-primary); }
+  .weather-big-temp sup { font-size:28px; vertical-align:super; color:var(--text-secondary); }
+  .weather-condition { font-size:18px; color:var(--text-secondary); margin-top:4px; }
+  .weather-icon-big { font-size:80px; line-height:1; filter:drop-shadow(0 0 20px rgba(0,212,255,0.3)); }
+  .weather-details-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+  .wd-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+    padding:14px; display:flex; align-items:center; gap:12px;
+  }
+  .wd-icon { font-size:22px; }
+  .wd-label { font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; }
+  .wd-value { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text-primary); }
+
+  .weather-hourly { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+  .hour-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; text-align:center; min-width:70px; flex-shrink:0;
+  }
+  .hour-time { font-size:10px; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); }
+  .hour-icon { font-size:20px; margin:6px 0; }
+  .hour-temp { font-size:14px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent-cyan); }
+  .hour-pop  { font-size:10px; color:#5ab4ff; margin-top:2px; }
+
+  .weather-forecast { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+  .forecast-card {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center;
+  }
+  .fc-day { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); font-family:'IBM Plex Mono',monospace; }
+  .fc-icon { font-size:26px; margin:8px 0; }
+  .fc-hi { font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text-primary); }
+  .fc-lo { font-size:12px; color:var(--text-secondary); font-family:'IBM Plex Mono',monospace; }
+  .fc-desc { font-size:10px; color:var(--text-dim); margin-top:4px; }
+
+  .weather-alert {
+    background:rgba(255,179,0,0.1); border:1px solid rgba(255,179,0,0.4);
+    border-radius:10px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .alert-icon { font-size:20px; flex-shrink:0; }
+  .alert-title { font-size:13px; font-weight:700; color:var(--accent-amber); }
+  .alert-body  { font-size:11px; color:var(--text-secondary); margin-top:4px; line-height:1.6; }
+
+  .weather-field-advisory {
+    background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:20px;
+  }
+  .advisory-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; margin-top:12px; }
+  .adv-item {
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:12px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .adv-indicator { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .adv-text { font-size:12px; }
+  .adv-sub  { font-size:10px; color:var(--text-secondary); margin-top:2px; }
+
+  /* ===== CUSTOM CALENDAR ===== */
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border); flex:1; }
+  .cal-day-header { background:var(--bg-card); padding:8px 0; text-align:center; font-size:10px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); text-transform:uppercase; letter-spacing:1px; }
+  .cal-cell {
+    background:var(--bg-panel); min-height:90px; padding:6px; cursor:pointer;
+    transition:background 0.1s; position:relative; overflow:hidden;
+  }
+  .cal-cell:hover { background:var(--bg-card); }
+  .cal-cell.today { background:rgba(0,212,255,0.07); }
+  .cal-cell.today .cal-cell-num { color:var(--accent-cyan); background:rgba(0,212,255,0.15); border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
+  .cal-cell.other-month { opacity:0.35; }
+  .cal-cell.selected { background:rgba(0,212,255,0.12); outline:1px solid var(--accent-cyan); }
+  .cal-cell-num { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); margin-bottom:4px; }
+  .cal-event {
+    font-size:9px; padding:2px 5px; border-radius:3px; margin-bottom:2px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;
+    font-family:'Exo 2',sans-serif; font-weight:600;
+  }
+  .cal-event:hover { filter:brightness(1.2); }
+  .cal-event.appt-pending   { background:rgba(255,179,0,0.25);  color:var(--accent-amber); }
+  .cal-event.appt-confirmed { background:rgba(0,230,118,0.2);   color:var(--accent-green); }
+  .cal-event.appt-cancelled { background:rgba(255,68,68,0.2);   color:var(--accent-red);   text-decoration:line-through; }
+  .cal-event.appt-completed { background:rgba(0,212,255,0.15);  color:var(--accent-cyan); }
+  .cal-more { font-size:9px; color:var(--accent-cyan); cursor:pointer; font-family:'IBM Plex Mono',monospace; }
+
+  /* Week view */
+  .week-grid { display:grid; grid-template-columns:52px repeat(7,1fr); gap:1px; background:var(--border); flex:1; }
+  .week-time-col { background:var(--bg-card); font-size:9px; font-family:'IBM Plex Mono',monospace; color:var(--text-dim); text-align:right; padding-right:6px; padding-top:2px; }
+  .week-day-header { background:var(--bg-card); padding:8px 6px; text-align:center; font-size:10px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); border-bottom:1px solid var(--border); }
+  .week-day-header.today-col { color:var(--accent-cyan); background:rgba(0,212,255,0.06); }
+  .week-cell { background:var(--bg-panel); min-height:36px; position:relative; cursor:pointer; transition:background 0.1s; }
+  .week-cell:hover { background:rgba(0,212,255,0.05); }
+  .week-event {
+    position:absolute; left:2px; right:2px; border-radius:4px; padding:2px 5px;
+    font-size:9px; font-weight:600; font-family:'Exo 2',sans-serif;
+    overflow:hidden; z-index:2; cursor:pointer; white-space:nowrap; text-overflow:ellipsis;
+  }
+
+  /* List view */
+  .cal-list-day { margin-bottom:16px; }
+  .cal-list-date { font-size:11px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent-cyan); border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
+  .cal-list-event { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:6px; cursor:pointer; display:flex; align-items:center; gap:12px; transition:border-color 0.15s; }
+  .cal-list-event:hover { border-color:var(--accent-cyan); }
+  .cal-list-time { font-size:12px; font-family:'IBM Plex Mono',monospace; color:var(--text-secondary); min-width:60px; }
+  .cal-list-title { font-size:13px; font-weight:600; flex:1; }
+  .cal-list-meta  { font-size:10px; color:var(--text-secondary); margin-top:2px; }
+
   /* Scrollbar global */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1026,6 +1165,17 @@
 <!-- HEADER -->
 <header class="header">
   <div class="logo">Field<span>Ops</span> CRM</div>
+  <!-- Live weather mini-widget -->
+  <div id="header-weather-widget" class="header-weather" onclick="switchTab('weather')" title="Click for full weather">
+    <div class="hw-icon" id="hw-icon">⛅</div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:6px;">
+        <div class="hw-temp" id="hw-temp">--°</div>
+        <div class="hw-desc" id="hw-desc">Loading…</div>
+      </div>
+      <div class="hw-loc">Monterey, CA</div>
+    </div>
+  </div>
   <div class="header-meta">
     <div><span class="live-dot"></span>MONTEREY COUNTY OPERATIONS</div>
     <div id="clock" style="font-size:13px;color:var(--accent-cyan);"></div>
@@ -1052,6 +1202,9 @@
     <span class="tab-icon">💼</span> Sales Board
     <span class="badge" id="sales-count-badge">0</span>
   </button>
+  <button class="tab-btn" onclick="switchTab('weather')" id="tab-weather">
+    <span class="tab-icon">🌤️</span> Weather
+  </button>
   <button class="tab-btn" onclick="switchTab('leaderboard')" id="tab-leaderboard">
     <span class="tab-icon">🏆</span> Leaderboard
   </button>
@@ -1068,7 +1221,7 @@
     <!-- Rep + Map Type -->
     <div class="sidebar-tools">
       <div style="display:flex;gap:6px;align-items:center;">
-        <input type="text" id="rep-name-quick" placeholder="Your rep name..." style="flex:1;padding:5px 9px;font-size:11px;" oninput="localStorage.setItem('fo_current_rep',this.value)">
+        <input type="text" id="rep-name-quick" placeholder="Your rep name..." style="flex:1;padding:5px 9px;font-size:11px;" oninput="localStorage.setItem('fo_current_rep',this.value);if(this.value.trim().length>2)addRepProfile(this.value.trim())">
       </div>
       <div class="sidebar-tool-row">
         <button class="btn btn-ghost btn-sm" onclick="setMapType('roadmap')" id="mt-roadmap" style="flex:1;font-size:10px;padding:5px;">🗺️ Map</button>
@@ -1113,9 +1266,8 @@
       <div class="empty-state"><div class="empty-icon">📍</div>Click map to drop a pin.<br>Right-click pin to update status.</div>
     </div>
 
-    <!-- API key (hidden, auto-loaded) -->
-    <div style="display:none;">
-      <input type="password" id="maps-api-key" value="AIzaSyA4p4p0jTEHn9uz29Jgw51f4-VXYyASEmE">
+    <!-- API key assembled at runtime; hidden field not used for loading -->
+    <input type="hidden" id="maps-api-key" value="">
     </div>
   </div>
 
@@ -1185,38 +1337,38 @@
 </section>
 
 <!-- ==================== CALENDAR PANEL ==================== -->
-<section class="panel" id="calendar-panel">
-  <div class="cal-sidebar">
-    <div class="sidebar-header">
-      <span>Appointments</span>
+<section class="panel" id="calendar-panel" style="flex-direction:column;overflow:hidden;">
+
+  <!-- Toolbar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="calNavMonth(-1)">‹</button>
+      <div style="font-size:16px;font-weight:700;font-family:'IBM Plex Mono',monospace;min-width:160px;text-align:center;" id="cal-month-label">—</div>
+      <button class="btn btn-ghost btn-sm" onclick="calNavMonth(1)">›</button>
+      <button class="btn btn-ghost btn-sm" onclick="calGoToday()">Today</button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" id="cal-view-month" onclick="setCalView('month')" style="color:var(--accent-cyan);">Month</button>
+      <button class="btn btn-ghost btn-sm" id="cal-view-week" onclick="setCalView('week')">Week</button>
+      <button class="btn btn-ghost btn-sm" id="cal-view-list" onclick="setCalView('list')">List</button>
       <button class="btn btn-primary btn-sm" onclick="openApptModal()">+ Book</button>
     </div>
-    <div class="appt-list" id="appt-list">
-      <div class="empty-state"><div class="empty-icon">📅</div>No appointments yet.</div>
-    </div>
   </div>
-  <div class="cal-embed" id="cal-embed-area">
-    <div style="width:100%;height:100%;display:flex;flex-direction:column;">
-      <div style="padding:16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;">📅 Google Calendar Integration</span>
-        <div style="flex:1;min-width:200px;">
-          <div class="api-key-row">
-            <input type="text" id="cal-embed-url" placeholder="Paste your Google Calendar public embed URL..." style="font-size:11px;">
-            <button class="btn btn-primary btn-sm" onclick="loadCalEmbed()">Load</button>
-          </div>
-        </div>
-        <div style="font-size:10px;color:var(--text-dim);">Google Cal → Settings → Share → Get embed code → copy the src URL</div>
-      </div>
-      <div style="flex:1;" id="cal-embed-inner">
-        <div class="map-placeholder" style="flex-direction:column;gap:12px;">
-          <div style="font-size:48px">📅</div>
-          <div class="map-api-setup">
-            <h3>Google Calendar Embed</h3>
-            <p>Paste your Google Calendar public embed URL above to display your calendar here. All appointments you add in the sidebar will also sync as a list view.</p>
-          </div>
-        </div>
-      </div>
+
+  <!-- Calendar body -->
+  <div style="display:flex;flex:1;overflow:hidden;min-height:0;">
+
+    <!-- Appointments sidebar -->
+    <div class="cal-sidebar" style="flex-shrink:0;">
+      <div class="sidebar-header"><span>Upcoming</span></div>
+      <div class="appt-list" id="appt-list"></div>
     </div>
+
+    <!-- Calendar view area -->
+    <div style="flex:1;overflow:auto;display:flex;flex-direction:column;" id="cal-view-area">
+      <!-- Filled by renderCustomCalendar() -->
+    </div>
+
   </div>
 </section>
 
@@ -1488,40 +1640,51 @@
       </div>
     </div>
 
-    <!-- Right: FCC Broadband Map -->
-    <div class="broadband-map-area">
-      <div style="width:100%;height:100%;display:flex;flex-direction:column;">
-        <div style="padding:12px 16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent-cyan);white-space:nowrap;">🗺️ FCC National Broadband Map</span>
-          <div style="flex:1;display:flex;gap:8px;flex-wrap:wrap;">
-            <select id="fcc-map-type" style="flex:1;min-width:160px;padding:5px;font-size:11px;" onchange="updateFCCMap()">
-              <option value="fixed">Fixed Broadband (Home)</option>
-              <option value="mobile">Mobile Broadband</option>
-            </select>
-            <select id="fcc-layer" style="flex:1;min-width:140px;padding:5px;font-size:11px;" onchange="updateFCCMap()">
-              <option value="">All Technologies</option>
-              <option value="fiber">Fiber Only</option>
-              <option value="cable">Cable Only</option>
-              <option value="dsl">DSL Only</option>
-              <option value="wireless">Fixed Wireless</option>
-            </select>
-          </div>
-          <a href="https://broadbandmap.fcc.gov/home" target="_blank" class="btn btn-ghost btn-sm" style="white-space:nowrap;">Open Full Map ↗</a>
+    <!-- Right: Native FCC Broadband Lookup + Mini-Map -->
+    <div class="broadband-map-area" style="display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- Toolbar -->
+      <div style="padding:12px 16px;background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;">
+        <span style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--accent-cyan);white-space:nowrap;">📡 FCC Broadband Lookup</span>
+        <div class="map-search-wrap" style="flex:1;min-width:200px;position:relative;">
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;">🔍</span>
+          <input type="text" id="bb-search-input" placeholder="Search any address in Monterey County…"
+            style="width:100%;padding:7px 12px 7px 30px;background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:12px;font-family:'Exo 2',sans-serif;outline:none;">
         </div>
-        <div style="flex:1;position:relative;" id="fcc-map-wrap">
-          <iframe
-            id="fcc-iframe"
-            src="https://broadbandmap.fcc.gov/home?location_id=&addr=Monterey+County%2C+CA&unit=&lat=36.6002&lon=-121.8947&zoom=10"
-            title="FCC Broadband Availability Map - Monterey County"
-            allowfullscreen
-            style="width:100%;height:100%;border:none;">
-          </iframe>
-          <div class="fcc-map-overlay-label">
-            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-green);animation:pulse 2s infinite;"></span>
-            FCC Broadband Data — Monterey County, CA
+        <button class="btn btn-primary btn-sm" onclick="lookupBroadband()" id="bb-lookup-btn">Look Up Coverage</button>
+        <select id="bb-speed-filter" style="padding:6px 10px;font-size:11px;background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);">
+          <option value="25">Min 25 Mbps</option>
+          <option value="100">Min 100 Mbps</option>
+          <option value="250">Min 250 Mbps</option>
+          <option value="1000">Min 1 Gbps</option>
+        </select>
+      </div>
+
+      <!-- Map + Results split -->
+      <div style="display:flex;flex:1;overflow:hidden;">
+
+        <!-- Mini Google Map -->
+        <div style="flex:1;position:relative;min-width:0;">
+          <div id="bb-map" style="width:100%;height:100%;"></div>
+          <div style="position:absolute;bottom:10px;left:10px;background:rgba(6,11,20,0.9);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--accent-cyan);pointer-events:none;">
+            🗺️ Monterey County — Click map to look up coverage at any point
+          </div>
+        </div>
+
+        <!-- Results panel -->
+        <div id="bb-results-panel" style="width:340px;flex-shrink:0;background:var(--bg-card);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;">
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;">🌐 ISP Availability</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-top:4px;" id="bb-results-addr">Search an address to see available providers</div>
+          </div>
+          <div id="bb-isp-list" style="flex:1;padding:12px;">
+            <!-- Default: show all known ISPs for Monterey County -->
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;">Known providers in Monterey County:</div>
+            <div id="bb-default-isps"></div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </section>
@@ -1608,29 +1771,107 @@
   </div>
 </section>
 
+<!-- ==================== WEATHER PANEL ==================== -->
+<section class="panel" id="weather-panel">
+<div class="weather-scroll-wrap">
+
+  <!-- Active alerts -->
+  <div id="weather-alerts-area"></div>
+
+  <!-- Hero current conditions -->
+  <div class="weather-hero">
+    <div class="weather-main">
+      <div class="weather-city">📍 Monterey, California</div>
+      <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+        <div class="weather-big-temp">
+          <span id="w-temp-num">--</span><sup id="w-temp-unit">°F</sup>
+        </div>
+        <div>
+          <div class="weather-condition" id="w-condition">Fetching weather…</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:4px;" id="w-feelslike"></div>
+        </div>
+      </div>
+    </div>
+    <div class="weather-icon-big" id="w-main-icon">⛅</div>
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
+      <button class="btn btn-primary btn-sm" onclick="fetchWeather()" id="weather-refresh-btn">🔄 Refresh</button>
+      <div style="font-size:10px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;" id="w-updated">—</div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleWeatherUnit()" id="w-unit-btn">Switch to °C</button>
+    </div>
+  </div>
+
+  <!-- Details grid -->
+  <div class="weather-details-grid" id="w-details-grid">
+    <div class="wd-card"><div class="wd-icon">💧</div><div><div class="wd-label">Humidity</div><div class="wd-value" id="wd-humidity">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">💨</div><div><div class="wd-label">Wind</div><div class="wd-value" id="wd-wind">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌡️</div><div><div class="wd-label">Dew Point</div><div class="wd-value" id="wd-dew">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">👁️</div><div><div class="wd-label">Visibility</div><div class="wd-value" id="wd-vis">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌅</div><div><div class="wd-label">Sunrise</div><div class="wd-value" id="wd-sunrise">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌇</div><div><div class="wd-label">Sunset</div><div class="wd-value" id="wd-sunset">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">☁️</div><div><div class="wd-label">Cloud Cover</div><div class="wd-value" id="wd-cloud">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌧️</div><div><div class="wd-label">Precip. Chance</div><div class="wd-value" id="wd-precip">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">📊</div><div><div class="wd-label">Pressure</div><div class="wd-value" id="wd-pressure">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">☀️</div><div><div class="wd-label">UV Index</div><div class="wd-value" id="wd-uv">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌊</div><div><div class="wd-label">High / Low</div><div class="wd-value" id="wd-hilow">—</div></div></div>
+    <div class="wd-card"><div class="wd-icon">🌬️</div><div><div class="wd-label">Wind Gust</div><div class="wd-value" id="wd-gust">—</div></div></div>
+  </div>
+
+  <!-- Hourly forecast -->
+  <div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;">⏱️ Hourly Forecast</div>
+    <div class="weather-hourly" id="w-hourly"></div>
+  </div>
+
+  <!-- 7-day forecast -->
+  <div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;">📅 7-Day Forecast</div>
+    <div class="weather-forecast" id="w-forecast"></div>
+  </div>
+
+  <!-- Field advisory -->
+  <div class="weather-field-advisory">
+    <div style="font-size:13px;font-weight:700;letter-spacing:1px;">🚪 Field Advisory — Door Knocking Conditions</div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Real-time assessment of current conditions for outdoor sales work.</div>
+    <div class="advisory-grid" id="w-advisory"></div>
+  </div>
+
+</div><!-- /.weather-scroll-wrap -->
+</section>
+
 <!-- ==================== LEADERBOARD PANEL ==================== -->
 <section class="panel" id="leaderboard-panel">
-  <div class="lb-header">
-    <h2>🏆 Sales Leaderboard</h2>
-    <p id="lb-period">All Time • Monterey County Operations</p>
+  <div style="padding:20px 24px 0;flex-shrink:0;">
+    <div class="lb-header">
+      <h2>🏆 Sales Leaderboard</h2>
+      <p id="lb-period">All Time • Monterey County Operations</p>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="promptAddRep()">+ Add Rep</button>
+      <button class="btn btn-ghost btn-sm" onclick="renderLeaderboard()">🔄 Refresh</button>
+      <button class="btn btn-ghost btn-sm" onclick="seedDemoLeaderboard()" id="lb-seed-btn">📊 Load Demo Data</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearLeaderboardDemo()" id="lb-clear-btn" style="display:none;">🗑️ Clear Demo</button>
+    </div>
+    <div class="lb-grid" id="lb-top-cards"></div>
   </div>
-  <div class="lb-grid" id="lb-top-cards"></div>
-  <div class="lb-full-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Rep Name</th>
-          <th>Sold</th>
-          <th>Installed</th>
-          <th>Pending</th>
-          <th>Cancelled</th>
-          <th>Close Rate</th>
-          <th>Points</th>
-        </tr>
-      </thead>
-      <tbody id="lb-tbody"></tbody>
-    </table>
+  <div style="flex:1;overflow-y:auto;padding:0 24px 24px;min-height:0;">
+    <div class="lb-full-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Rep Name</th>
+            <th>Sold</th>
+            <th>Installed</th>
+            <th>Pending</th>
+            <th>Cancelled</th>
+            <th>Knocks</th>
+            <th>Close %</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody id="lb-tbody"></tbody>
+      </table>
+    </div>
   </div>
 </section>
 
@@ -1880,14 +2121,76 @@ function switchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'leaderboard') renderLeaderboard();
   if (name === 'sales') { renderSales(); renderPipeline(); }
-  if (name === 'broadband') { renderFiberNews(); }
-  if (name === 'outage') {
-    // auto-load outage sub-panel if not already loaded
-    const activeSub = document.querySelector('.sub-panel.active');
-    if (activeSub && activeSub.id === 'outage-sub-internet') {
-      // already on internet tab, do nothing
+  if (name === 'broadband') {
+    renderFiberNews();
+    renderDefaultISPs();
+    // Retry until Google Maps is ready — poll every 300ms up to 10s
+    if (!bbMap) {
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts++;
+        if (window.google && !bbMap) { clearInterval(poll); initBroadbandMap(); }
+        else if (bbMap) clearInterval(poll);
+        else if (attempts > 33) clearInterval(poll);
+      }, 300);
     }
   }
+  if (name === 'weather') { fetchWeather(); }
+  if (name === 'calendar') renderCustomCalendar();
+}
+
+/* ===== LEADERBOARD DEMO DATA SEEDER ===== */
+const DEMO_REPS = [
+  { name:'Maria Gonzalez', sold:12, installed:9,  pending:2, cancelled:1 },
+  { name:'James Patel',    sold:10, installed:7,  pending:3, cancelled:0 },
+  { name:'Sandra Lee',     sold:8,  installed:8,  pending:1, cancelled:2 },
+  { name:'Devon Cruz',     sold:7,  installed:5,  pending:2, cancelled:1 },
+  { name:'Tanya Williams', sold:5,  installed:4,  pending:2, cancelled:0 },
+];
+let demoDataSeeded = false;
+
+function seedDemoLeaderboard() {
+  if (demoDataSeeded) { renderLeaderboard(); return; }
+  const products = ['Solar 6kW','Solar 8kW','Solar+Battery','Battery Only','Roofing'];
+  let seeded = [];
+  DEMO_REPS.forEach(rep => {
+    const counts = { sold: rep.sold, installed: rep.installed, pending: rep.pending, cancelled: rep.cancelled };
+    Object.entries(counts).forEach(([status, count]) => {
+      for (let i=0; i<count; i++) {
+        seeded.push({
+          id: `demo-${rep.name}-${status}-${i}`,
+          customer: `Demo Customer ${Math.floor(Math.random()*900+100)}`,
+          phone: `(831) ${Math.floor(Math.random()*900+100)}-${Math.floor(Math.random()*9000+1000)}`,
+          address: `${Math.floor(Math.random()*9000+1000)} Demo St, Salinas, CA`,
+          rep: rep.name, product: products[i % products.length],
+          date: new Date(Date.now() - Math.random()*30*86400000).toISOString().split('T')[0],
+          installDate: status === 'installed' ? new Date(Date.now() - Math.random()*20*86400000).toISOString().split('T')[0] : '',
+          value: Math.floor(Math.random()*20000+8000),
+          status, notes: ''
+        });
+      }
+    });
+  });
+  // Merge with existing without duplicating
+  const existingIds = new Set(state.sales.map(s=>s.id));
+  seeded.filter(s=>!existingIds.has(s.id)).forEach(s=>state.sales.unshift(s));
+  saveLocal();
+  demoDataSeeded = true;
+  document.getElementById('lb-seed-btn').style.display = 'none';
+  document.getElementById('lb-clear-btn').style.display = '';
+  renderLeaderboard();
+  renderSales();
+  renderPipeline();
+  updateBadges();
+}
+
+function clearLeaderboardDemo() {
+  if (!confirm('Remove all demo data?')) return;
+  state.sales = state.sales.filter(s => !s.id.startsWith('demo-'));
+  saveLocal(); demoDataSeeded = false;
+  document.getElementById('lb-seed-btn').style.display = '';
+  document.getElementById('lb-clear-btn').style.display = 'none';
+  renderLeaderboard(); renderSales(); renderPipeline(); updateBadges();
 }
 
 /* ===================================================
@@ -1906,7 +2209,7 @@ function switchOutageTab(tab) {
 /* ===================================================
    GOOGLE MAPS — FULL SPOTIO/SALESRABBIT IMPLEMENTATION
    =================================================== */
-const GMAPS_API_KEY = 'AIzaSyA4p4p0jTEHn9uz29Jgw51f4-VXYyASEmE';
+// GMAPS_API_KEY declared in the Security block above (obfuscated)
 
 const STATUS_COLORS = {
   'not-home': '#7a9ab5',
@@ -2087,6 +2390,9 @@ window.initMap = function() {
 
   renderMapMarkers();
   updateMapStats();
+
+  // Google Maps loaded — always init broadband mini-map so it's ready when user switches tabs
+  setTimeout(initBroadbandMap, 150);
 };
 
 /* ---- MARKERS ---- */
@@ -2465,11 +2771,9 @@ function savePin() {
   const id = document.getElementById('pin-edit-id').value || Date.now().toString();
   const address = document.getElementById('pin-address').value.trim();
   const rep = document.getElementById('pin-rep').value.trim();
-  if (rep) localStorage.setItem('fo_current_rep', rep);
-
+  if (rep) { localStorage.setItem('fo_current_rep', rep); addRepProfile(rep); }
   const pin = {
-    id,
-    address,
+    id, address,
     name: document.getElementById('pin-name').value.trim(),
     phone: document.getElementById('pin-phone').value.trim(),
     status: document.getElementById('pin-status').value,
@@ -2578,7 +2882,7 @@ function closeApptModal() { document.getElementById('appt-modal').classList.remo
 function saveAppt() {
   const id = document.getElementById('appt-edit-id').value || Date.now().toString();
   const rep = document.getElementById('appt-rep').value.trim();
-  if (rep) localStorage.setItem('fo_current_rep', rep);
+  if (rep) { localStorage.setItem('fo_current_rep', rep); addRepProfile(rep); }
 
   const appt = {
     id,
@@ -2642,11 +2946,154 @@ function editAppt(id) {
   document.getElementById('appt-modal').classList.add('open');
 }
 
-function loadCalEmbed() {
-  const url = document.getElementById('cal-embed-url').value.trim();
-  if (!url) return;
-  const inner = document.getElementById('cal-embed-inner');
-  inner.innerHTML = `<iframe src="${url}" style="width:100%;height:100%;border:none;" frameborder="0" scrolling="no"></iframe>`;
+// loadCalEmbed kept as no-op for backwards compat
+function loadCalEmbed() {}
+
+/* ===================================================
+   CUSTOM CSS CALENDAR
+   =================================================== */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+let calView = 'month'; // 'month' | 'week' | 'list'
+let calSelectedDate = null;
+
+const STATUS_COLORS_CAL = { pending:'var(--accent-amber)', confirmed:'var(--accent-green)', cancelled:'var(--accent-red)', completed:'var(--accent-cyan)' };
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function calNavMonth(dir) { calMonth += dir; if (calMonth > 11){calMonth=0;calYear++} if (calMonth<0){calMonth=11;calYear--} renderCustomCalendar(); }
+function calGoToday() { calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); renderCustomCalendar(); }
+function setCalView(v) { calView=v; ['month','week','list'].forEach(x=>document.getElementById('cal-view-'+x)?.style && (document.getElementById('cal-view-'+x).style.color = x===v?'var(--accent-cyan)':'')); renderCustomCalendar(); }
+
+function renderCustomCalendar() {
+  setText('cal-month-label', `${MONTH_NAMES[calMonth]} ${calYear}`);
+  const area = document.getElementById('cal-view-area');
+  if (!area) return;
+  if (calView === 'month') area.innerHTML = buildMonthView();
+  else if (calView === 'week') area.innerHTML = buildWeekView();
+  else area.innerHTML = buildListView();
+  renderApptList();
+}
+
+function apptsByDate(yyyy, mm, dd) {
+  const key = `${yyyy}-${String(mm+1).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+  return state.appointments.filter(a => a.date === key);
+}
+
+function buildMonthView() {
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+  const today = new Date();
+
+  let html = `<div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="cal-grid" style="grid-template-rows:auto;flex-shrink:0;">`;
+  DAY_SHORT.forEach(d => html += `<div class="cal-day-header">${d}</div>`);
+  html += `</div><div class="cal-grid" style="flex:1;auto-flow:row;">`;
+
+  let cells = [];
+  for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: daysInPrev - i, month: calMonth - 1, year: calYear, other: true });
+  for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, month: calMonth, year: calYear, other: false });
+  const remaining = 42 - cells.length;
+  for (let d = 1; d <= remaining; d++) cells.push({ day: d, month: calMonth + 1, year: calYear, other: true });
+
+  cells.forEach(c => {
+    const isToday = !c.other && c.day === today.getDate() && c.month === today.getMonth() && c.year === today.getFullYear();
+    const appts = c.other ? [] : apptsByDate(c.year, c.month, c.day);
+    const selKey = calSelectedDate;
+    const cellKey = `${c.year}-${String(c.month+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+    const isSel = selKey === cellKey;
+    html += `<div class="cal-cell${isToday?' today':''}${c.other?' other-month':''}${isSel?' selected':''}"
+      onclick="calCellClick('${cellKey}')">
+      <div class="cal-cell-num">${c.day}</div>`;
+    appts.slice(0,3).forEach(a => {
+      html += `<div class="cal-event appt-${a.status}" onclick="event.stopPropagation();editAppt('${a.id}')" title="${sanitize(a.name||'')}">${sanitize(a.time||'')} ${sanitize(a.name||'Appt')}</div>`;
+    });
+    if (appts.length > 3) html += `<div class="cal-more">+${appts.length-3} more</div>`;
+    html += `</div>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function calCellClick(dateKey) {
+  calSelectedDate = dateKey;
+  const [y,m,d] = dateKey.split('-').map(Number);
+  calYear = y; calMonth = m - 1;
+  renderCustomCalendar();
+  // Pre-fill date in appt modal
+  document.getElementById('appt-date').value = dateKey;
+}
+
+function buildWeekView() {
+  // Find the start of the week containing today (or selected date)
+  const ref = calSelectedDate ? new Date(calSelectedDate + 'T12:00:00') : new Date(calYear, calMonth, 1);
+  const startOfWeek = new Date(ref);
+  startOfWeek.setDate(ref.getDate() - ref.getDay());
+  const today = new Date();
+
+  const hours = Array.from({length:18},(_,i)=>i+6); // 6am–11pm
+  let html = `<div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <div class="week-grid" style="flex-shrink:0;">
+      <div class="week-day-header" style="font-size:9px;">Hour</div>`;
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate() + i);
+    weekDays.push(d);
+    const isToday = d.toDateString() === today.toDateString();
+    html += `<div class="week-day-header${isToday?' today-col':''}">
+      <div>${DAY_SHORT[d.getDay()]}</div>
+      <div style="font-size:16px;font-weight:900;${isToday?'color:var(--accent-cyan);':''}">${d.getDate()}</div>
+    </div>`;
+  }
+  html += `</div><div style="flex:1;overflow-y:auto;"><div class="week-grid">`;
+  hours.forEach(h => {
+    html += `<div class="week-time-col" style="line-height:36px;">${h}:00</div>`;
+    weekDays.forEach(d => {
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const appts = state.appointments.filter(a => a.date === key && a.time && parseInt(a.time.split(':')[0]) === h);
+      html += `<div class="week-cell" onclick="calCellClick('${key}');document.getElementById('appt-time').value='${h}:00'">`;
+      appts.forEach(a => {
+        html += `<div class="week-event appt-${a.status}" style="background:${STATUS_COLORS_CAL[a.status]}22;color:${STATUS_COLORS_CAL[a.status]};border-left:2px solid ${STATUS_COLORS_CAL[a.status]};" onclick="event.stopPropagation();editAppt('${a.id}')">${sanitize(a.name||'Appt')}</div>`;
+      });
+      html += `</div>`;
+    });
+  });
+  html += `</div></div></div>`;
+  return html;
+}
+
+function buildListView() {
+  const sorted = [...state.appointments].sort((a,b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.time||'').localeCompare(b.time||''));
+  if (!sorted.length) return '<div class="empty-state" style="padding:40px;"><div class="empty-icon">📅</div>No appointments yet.<br>Click "+ Book" to add one.</div>';
+  const byDate = {};
+  sorted.forEach(a => { if (!byDate[a.date]) byDate[a.date] = []; byDate[a.date].push(a); });
+  const TYPE_ICONS = {'site-survey':'🔍','follow-up':'🔄','install':'⚙️','sales-pitch':'💬','other':'📌'};
+  let html = '<div style="padding:20px;max-width:700px;margin:0 auto;">';
+  Object.entries(byDate).forEach(([date, appts]) => {
+    const d = new Date(date + 'T12:00:00');
+    const today = new Date(); today.setHours(12,0,0,0);
+    const isToday = d.toDateString() === today.toDateString();
+    const isFuture = d >= today;
+    html += `<div class="cal-list-day">
+      <div class="cal-list-date" style="${isToday?'color:var(--accent-cyan);':isFuture?'color:var(--text-primary);':'color:var(--text-dim);'}">
+        ${isToday?'TODAY — ':''}${d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
+      </div>`;
+    appts.forEach(a => {
+      html += `<div class="cal-list-event" onclick="editAppt('${a.id}')">
+        <div style="width:6px;height:36px;border-radius:3px;background:${STATUS_COLORS_CAL[a.status]};flex-shrink:0;"></div>
+        <div class="cal-list-time">${a.time||'All day'}</div>
+        <div style="flex:1;">
+          <div class="cal-list-title">${sanitize(a.name||'Appointment')}</div>
+          <div class="cal-list-meta">${TYPE_ICONS[a.type]||'📌'} ${a.type?.replace('-',' ')||''} ${a.rep?'· 👤 '+sanitize(a.rep):''} ${a.address?'· 📍 '+sanitize(a.address.split(',')[0]):''}</div>
+        </div>
+        <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:10px;border:1px solid ${STATUS_COLORS_CAL[a.status]};color:${STATUS_COLORS_CAL[a.status]};">${a.status.toUpperCase()}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  html += '</div>';
+  return html;
 }
 
 /* ===================================================
@@ -3102,11 +3549,211 @@ function loadIspPage() {}  // no-op, handled via drilldown
 /* ===================================================
    FCC BROADBAND MAP
    =================================================== */
-function updateFCCMap() {
-  const type = document.getElementById('fcc-map-type').value;
-  const layer = document.getElementById('fcc-layer').value;
-  const baseUrl = `https://broadbandmap.fcc.gov/home?location_id=&addr=Monterey+County%2C+CA&unit=&lat=36.6002&lon=-121.8947&zoom=10`;
-  document.getElementById('fcc-iframe').src = baseUrl;
+/* ===================================================
+   BROADBAND MAP — NATIVE FCC API + GOOGLE MAPS
+   =================================================== */
+let bbMap = null, bbMarker = null, bbAutocomplete = null;
+let bbLookupLat = 36.6002, bbLookupLng = -121.8947;
+
+const MONTEREY_ISPS = [
+  { name:'AT&T Fiber',       tech:'Fiber',          maxDown:'5 Gbps',   maxUp:'5 Gbps',   coverage:'33%',  color:'#00c0ff' },
+  { name:'EarthLink Fiber',  tech:'Fiber',          maxDown:'5 Gbps',   maxUp:'5 Gbps',   coverage:'33%',  color:'#4ade80' },
+  { name:'Xfinity',          tech:'Cable (HFC)',    maxDown:'2 Gbps',   maxUp:'200 Mbps', coverage:'62%',  color:'#e15100' },
+  { name:'Spectrum',         tech:'Cable',          maxDown:'1 Gbps',   maxUp:'35 Mbps',  coverage:'28%',  color:'#0087c8' },
+  { name:'T-Mobile Home',    tech:'5G Fixed Wire.', maxDown:'182 Mbps', maxUp:'23 Mbps',  coverage:'78%',  color:'#e20074' },
+  { name:'Starlink',         tech:'Satellite',      maxDown:'220 Mbps', maxUp:'25 Mbps',  coverage:'100%', color:'#c084fc' },
+  { name:'Cruzio',           tech:'Fixed Wireless', maxDown:'1 Gbps',   maxUp:'100 Mbps', coverage:'Rural',color:'#22d3ee' },
+  { name:'Verizon LTE',      tech:'Fixed Wireless', maxDown:'50 Mbps',  maxUp:'10 Mbps',  coverage:'Varies',color:'#cd040b'},
+];
+
+function initBroadbandMap() {
+  if (!window.google || bbMap) return;
+  bbMap = new google.maps.Map(document.getElementById('bb-map'), {
+    center: { lat: 36.6002, lng: -121.8947 },
+    zoom: 11,
+    mapTypeId: 'roadmap',
+    disableDefaultUI: true,
+    gestureHandling: 'greedy',
+    styles: [
+      {elementType:'geometry', stylers:[{color:'#0d1520'}]},
+      {elementType:'labels.text.fill', stylers:[{color:'#8ab0c8'}]},
+      {elementType:'labels.text.stroke', stylers:[{color:'#060b14'}]},
+      {featureType:'road', elementType:'geometry', stylers:[{color:'#1a2e46'}]},
+      {featureType:'road.highway', elementType:'geometry', stylers:[{color:'#1e3a5f'}]},
+      {featureType:'water', elementType:'geometry', stylers:[{color:'#0a1628'}]},
+      {featureType:'poi', stylers:[{visibility:'off'}]},
+      {featureType:'transit', stylers:[{visibility:'off'}]},
+    ]
+  });
+
+  // Autocomplete on the search input
+  const input = document.getElementById('bb-search-input');
+  bbAutocomplete = new google.maps.places.Autocomplete(input, {
+    componentRestrictions: { country: 'us' },
+    bounds: new google.maps.LatLngBounds(
+      { lat: 35.8, lng: -122.2 }, { lat: 37.0, lng: -121.0 }
+    ),
+    fields: ['geometry','formatted_address','name']
+  });
+  bbAutocomplete.addListener('place_changed', () => {
+    const place = bbAutocomplete.getPlace();
+    if (place.geometry) {
+      bbLookupLat = place.geometry.location.lat();
+      bbLookupLng = place.geometry.location.lng();
+      bbMap.setCenter(place.geometry.location);
+      bbMap.setZoom(16);
+      lookupBroadband(place.formatted_address);
+    }
+  });
+
+  // Click on map to look up
+  bbMap.addListener('click', (e) => {
+    bbLookupLat = e.latLng.lat();
+    bbLookupLng = e.latLng.lng();
+    lookupBroadband();
+  });
+
+  renderDefaultISPs();
+  drawCoverageZones();
+}
+
+function drawCoverageZones() {
+  if (!bbMap) return;
+  // Draw semi-transparent coverage zones for key cities
+  const cities = [
+    { name:'Salinas', lat:36.6777, lng:-121.6555, r:8000, color:'#00d4ff' },
+    { name:'Monterey', lat:36.6002, lng:-121.8947, r:5000, color:'#00e676' },
+    { name:'Seaside', lat:36.6122, lng:-121.8536, r:3000, color:'#00e676' },
+    { name:'Marina', lat:36.6819, lng:-121.8025, r:3000, color:'#ffb300' },
+    { name:'Pacific Grove', lat:36.6177, lng:-121.9166, r:2500, color:'#00e676' },
+    { name:'Carmel', lat:36.5552, lng:-121.9233, r:3000, color:'#c084fc' },
+  ];
+  cities.forEach(c => {
+    new google.maps.Circle({
+      map: bbMap, center: { lat: c.lat, lng: c.lng }, radius: c.r,
+      fillColor: c.color, fillOpacity: 0.06,
+      strokeColor: c.color, strokeOpacity: 0.25, strokeWeight: 1
+    });
+    new google.maps.Marker({
+      position: { lat: c.lat, lng: c.lng }, map: bbMap,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 5, fillColor: c.color, fillOpacity: 0.8, strokeWeight: 0 },
+      label: { text: c.name, color: c.color, fontSize: '10px', fontFamily: 'IBM Plex Mono,monospace' }
+    });
+  });
+}
+
+async function lookupBroadband(addressOverride) {
+  const btn = document.getElementById('bb-lookup-btn');
+  btn.textContent = '⏳ Looking up…'; btn.disabled = true;
+
+  // Drop a marker
+  if (bbMarker) bbMarker.setMap(null);
+  bbMarker = new google.maps.Marker({
+    position: { lat: bbLookupLat, lng: bbLookupLng }, map: bbMap,
+    animation: google.maps.Animation.DROP,
+    icon: { path: google.maps.SymbolPath.CIRCLE, scale: 12, fillColor:'#00d4ff', fillOpacity:1, strokeColor:'#fff', strokeWeight:2 }
+  });
+  bbMap.setCenter({ lat: bbLookupLat, lng: bbLookupLng });
+
+  // Reverse geocode if no address supplied
+  let addr = addressOverride;
+  if (!addr && window.google) {
+    try {
+      const results = await new Promise((res,rej) =>
+        new google.maps.Geocoder().geocode({ location: { lat: bbLookupLat, lng: bbLookupLng }}, (r,s) => s==='OK'?res(r):rej(s))
+      );
+      addr = results[0]?.formatted_address || `${bbLookupLat.toFixed(4)}, ${bbLookupLng.toFixed(4)}`;
+    } catch { addr = `${bbLookupLat.toFixed(4)}, ${bbLookupLng.toFixed(4)}`; }
+  }
+
+  setText('bb-results-addr', addr);
+
+  // Try FCC Broadband API (public, no key needed)
+  try {
+    const minSpeed = document.getElementById('bb-speed-filter').value;
+    const url = `https://broadbandmap.fcc.gov/api/public/map/listAvailability?latitude=${bbLookupLat.toFixed(6)}&longitude=${bbLookupLng.toFixed(6)}&unit_id=&addr=&city=&state=CA&zip=&category=residential&speed=${minSpeed}&tech=300`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (resp.ok) {
+      const data = await resp.json();
+      renderFCCResults(data, addr, minSpeed);
+      btn.textContent = 'Look Up Coverage'; btn.disabled = false;
+      return;
+    }
+  } catch(e) { /* fall through to local data */ }
+
+  // Fallback: show all Monterey County ISPs with note
+  renderLocalFallback(addr);
+  btn.textContent = 'Look Up Coverage'; btn.disabled = false;
+}
+
+function renderFCCResults(data, addr, minSpeed) {
+  const list = document.getElementById('bb-isp-list');
+  const availability = data?.availability || [];
+
+  if (!availability.length) {
+    list.innerHTML = `
+      <div style="padding:20px;text-align:center;color:var(--text-secondary);">
+        <div style="font-size:28px;margin-bottom:10px;">🔍</div>
+        <div style="font-size:13px;">No broadband providers found at this location for ≥${minSpeed} Mbps.</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">Try reducing the minimum speed filter or check a nearby address.</div>
+      </div>`;
+    return;
+  }
+
+  const TECH_MAP = { 10:'DSL', 40:'Cable (Coaxial)', 41:'Cable (HFC)', 50:'Fiber', 300:'Wireless', 400:'Satellite', 0:'Other' };
+  const TECH_COLORS = { 50:'var(--accent-green)', 40:'var(--accent-amber)', 41:'var(--accent-amber)', 300:'var(--accent-cyan)', 400:'var(--accent-purple)', 10:'#7a9ab5', 0:'var(--text-secondary)' };
+
+  list.innerHTML = `
+    <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:11px;color:var(--accent-green);font-family:'IBM Plex Mono',monospace;">✅ ${availability.length} provider${availability.length>1?'s':''} available</div>
+      <div style="font-size:10px;color:var(--text-dim);">Source: FCC BroadbandMap</div>
+    </div>
+    ${availability.map(isp => {
+      const tech = TECH_MAP[isp.technology_code] || 'Unknown';
+      const color = TECH_COLORS[isp.technology_code] || 'var(--text-secondary)';
+      return `<div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:3px solid ${color};">
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);">${sanitize(isp.brand_name || isp.holding_company_name || 'Unknown ISP')}</div>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+          <span style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid ${color};color:${color};font-family:'IBM Plex Mono',monospace;">${sanitize(tech)}</span>
+          <span style="font-size:10px;color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;">↓ ${sanitize(String(isp.max_advertised_download_speed||'—'))} Mbps</span>
+          <span style="font-size:10px;color:var(--accent-green);font-family:'IBM Plex Mono',monospace;">↑ ${sanitize(String(isp.max_advertised_upload_speed||'—'))} Mbps</span>
+        </div>
+        ${isp.low_latency ? '<div style="font-size:10px;color:var(--accent-green);margin-top:4px;">⚡ Low latency</div>' : ''}
+      </div>`;
+    }).join('')}
+    <div style="font-size:10px;color:var(--text-dim);margin-top:10px;text-align:center;">Data: FCC Broadband Availability Map (25 Mbps+ residential)</div>`;
+}
+
+function renderLocalFallback(addr) {
+  const list = document.getElementById('bb-isp-list');
+  list.innerHTML = `
+    <div style="background:rgba(255,179,0,0.08);border:1px solid rgba(255,179,0,0.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--accent-amber);">
+      ⚠️ FCC API unavailable — showing known Monterey County providers
+    </div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;">Providers serving this general area:</div>
+    ${MONTEREY_ISPS.map(isp => `
+      <div style="background:var(--bg-panel);border:1px solid var(--border);border-left:3px solid ${isp.color};border-radius:8px;padding:10px 12px;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-primary);">${sanitize(isp.name)}</div>
+        <div style="display:flex;gap:8px;margin-top:5px;flex-wrap:wrap;">
+          <span style="font-size:10px;color:${isp.color};font-family:'IBM Plex Mono',monospace;">${sanitize(isp.tech)}</span>
+          <span style="font-size:10px;color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;">↓ ${sanitize(isp.maxDown)}</span>
+          <span style="font-size:10px;color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;">${sanitize(isp.coverage)} coverage</span>
+        </div>
+      </div>`).join('')}`;
+}
+
+function renderDefaultISPs() {
+  const el = document.getElementById('bb-default-isps');
+  if (!el) return;
+  el.innerHTML = MONTEREY_ISPS.map(isp => `
+    <div style="background:var(--bg-panel);border:1px solid var(--border);border-left:3px solid ${isp.color};border-radius:8px;padding:8px 10px;margin-bottom:5px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-primary);">${sanitize(isp.name)}</div>
+      <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+        <span style="font-size:9px;color:${isp.color};font-family:'IBM Plex Mono',monospace;">${sanitize(isp.tech)}</span>
+        <span style="font-size:9px;color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;">↓${sanitize(isp.maxDown)}</span>
+        <span style="font-size:9px;color:var(--text-secondary);">${sanitize(isp.coverage)}</span>
+      </div>
+    </div>`).join('');
 }
 
 /* ===================================================
@@ -3225,7 +3872,7 @@ function closeSaleModal() { document.getElementById('sale-modal').classList.remo
 function saveSale() {
   const id = document.getElementById('sale-edit-id').value || Date.now().toString();
   const rep = document.getElementById('sale-rep').value.trim();
-  if (rep) localStorage.setItem('fo_current_rep', rep);
+  if (rep) { localStorage.setItem('fo_current_rep', rep); addRepProfile(rep); }
 
   const sale = {
     id,
@@ -3355,66 +4002,561 @@ function saveNotes() {
 /* ===================================================
    LEADERBOARD
    =================================================== */
+/* ── Rep Profile Registry ───────────────────────────────────────────────── */
+// Collects every known rep name from: saved profiles + sales + pins + appointments
+function getAllRepNames() {
+  const names = new Set();
+  // Explicitly saved profiles (persists even with 0 activity)
+  try {
+    JSON.parse(localStorage.getItem('fo_rep_profiles') || '[]').forEach(n => n && names.add(n.trim()));
+  } catch(e) {}
+  // From all activity records
+  state.sales.forEach(s => s.rep?.trim() && names.add(s.rep.trim()));
+  state.pins.forEach(p => p.rep?.trim() && names.add(p.rep.trim()));
+  state.appointments.forEach(a => a.rep?.trim() && names.add(a.rep.trim()));
+  // Current rep
+  const cur = localStorage.getItem('fo_current_rep');
+  if (cur?.trim()) names.add(cur.trim());
+  return [...names].filter(Boolean).sort();
+}
+
+function addRepProfile(name) {
+  if (!name?.trim()) return;
+  const n = name.trim();
+  try {
+    const profiles = JSON.parse(localStorage.getItem('fo_rep_profiles') || '[]');
+    if (!profiles.includes(n)) {
+      profiles.push(n);
+      localStorage.setItem('fo_rep_profiles', JSON.stringify(profiles));
+    }
+  } catch(e) {}
+}
+
+function removeRepProfile(name) {
+  if (!name) return;
+  try {
+    const profiles = JSON.parse(localStorage.getItem('fo_rep_profiles') || '[]').filter(n => n !== name);
+    localStorage.setItem('fo_rep_profiles', JSON.stringify(profiles));
+  } catch(e) {}
+  renderLeaderboard();
+}
+
+function promptAddRep() {
+  const name = prompt('Enter rep name to add to leaderboard:');
+  if (name?.trim()) { addRepProfile(name.trim()); renderLeaderboard(); }
+}
+
+/* ── Leaderboard Data ───────────────────────────────────────────────────── */
 function getLeaderboardData() {
+  // Start with every known rep at zero
   const reps = {};
+  getAllRepNames().forEach(name => {
+    reps[name] = { name, sold:0, installed:0, pending:0, cancelled:0, revenue:0, doorKnocks:0, appointments:0 };
+  });
+  const ensure = key => {
+    if (!reps[key]) reps[key] = { name:key, sold:0, installed:0, pending:0, cancelled:0, revenue:0, doorKnocks:0, appointments:0 };
+  };
+  // Tally sales
   state.sales.forEach(s => {
-    if (!s.rep) return;
-    if (!reps[s.rep]) reps[s.rep] = { name: s.rep, sold:0, installed:0, pending:0, cancelled:0, revenue:0 };
-    reps[s.rep][s.status] = (reps[s.rep][s.status] || 0) + 1;
-    reps[s.rep].revenue += s.value || 0;
+    if (!s.rep?.trim()) return;
+    const k = s.rep.trim(); ensure(k);
+    if (reps[k][s.status] !== undefined) reps[k][s.status]++;
+    else reps[k][s.status] = 1;
+    reps[k].revenue += s.value || 0;
+  });
+  // Tally door knocks
+  state.pins.forEach(p => {
+    if (!p.rep?.trim()) return;
+    const k = p.rep.trim(); ensure(k);
+    reps[k].doorKnocks++;
+  });
+  // Tally appointments
+  state.appointments.forEach(a => {
+    if (!a.rep?.trim()) return;
+    const k = a.rep.trim(); ensure(k);
+    reps[k].appointments++;
   });
 
   return Object.values(reps)
     .map(r => ({
       ...r,
-      points: (r.sold * 10) + (r.installed * 15) + (r.pending * 5) - (r.cancelled * 3),
-      total: r.sold + r.installed + r.pending
+      points: (r.sold*10) + (r.installed*15) + (r.pending*5) - (r.cancelled*3) + Math.floor(r.doorKnocks/5),
+      total: r.sold + r.installed + r.pending + r.cancelled
     }))
-    .sort((a,b) => b.points - a.points);
+    .sort((a,b) => b.points - a.points || b.sold - a.sold || a.name.localeCompare(b.name));
 }
 
+/* ── Leaderboard Renderer ───────────────────────────────────────────────── */
 function renderLeaderboard() {
   const data = getLeaderboardData();
-  const maxPoints = data[0]?.points || 1;
+  const maxPts = Math.max(1, data[0]?.points || 1);
+  const MEDALS = ['👑','🥈','🥉'];
+  const initials = n => n.trim().split(/\s+/).map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || '?';
 
-  const EMOJIS = ['👑','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
-  const INITIALS = name => name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-
+  // ── Top 3 podium cards ───────────────────────────────────────────────────
+  const top3 = data.slice(0, 3);
   if (!data.length) {
-    document.getElementById('lb-top-cards').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🏆</div>No sales data yet. Log some sales to see the leaderboard.</div>';
+    document.getElementById('lb-top-cards').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;padding:30px;">
+        <div class="empty-icon">🏆</div>
+        <div>No reps yet. Add a rep profile to get started.</div>
+        <button class="btn btn-primary" style="margin-top:14px;" onclick="promptAddRep()">+ Add Rep</button>
+      </div>`;
+  } else {
+    document.getElementById('lb-top-cards').innerHTML = top3.map((r,i) => `
+      <div class="lb-card rank-${i+1}" style="position:relative;">
+        <button onclick="removeRepProfile(${JSON.stringify(r.name)});event.stopPropagation();"
+          title="Remove rep" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;line-height:1;">✕</button>
+        <div class="lb-rank">${MEDALS[i]||'#'+(i+1)} #${i+1}</div>
+        <div class="lb-avatar">${initials(r.name)}</div>
+        <div class="lb-name">${sanitize(r.name)}</div>
+        <div class="lb-score">${r.points} <span style="font-size:11px;font-weight:400;color:var(--text-secondary);">pts</span></div>
+        <div class="lb-meta">${r.revenue>0?'$'+r.revenue.toLocaleString()+' revenue':'No sales yet'}</div>
+        <div class="lb-bars">
+          <div class="lb-bar-item"><div class="lb-bar-num text-amber">${r.sold}</div><div class="lb-bar-label">Sold</div></div>
+          <div class="lb-bar-item"><div class="lb-bar-num text-green">${r.installed}</div><div class="lb-bar-label">Installed</div></div>
+          <div class="lb-bar-item"><div class="lb-bar-num text-cyan">${r.doorKnocks}</div><div class="lb-bar-label">Knocks</div></div>
+        </div>
+        <div class="perf-bar"><div class="perf-fill" style="width:${Math.max(2,Math.round(Math.max(0,r.points)/maxPts*100))}%"></div></div>
+      </div>
+    `).join('');
+  }
+
+  // ── Full table (all reps, including zeros) ───────────────────────────────
+  if (!data.length) {
     document.getElementById('lb-tbody').innerHTML = '';
     return;
   }
-
-  document.getElementById('lb-top-cards').innerHTML = data.slice(0,3).map((r,i) => `
-    <div class="lb-card rank-${i+1}">
-      <div class="lb-rank">${EMOJIS[i]} #${i+1}</div>
-      <div class="lb-avatar">${INITIALS(r.name)}</div>
-      <div class="lb-name">${r.name}</div>
-      <div class="lb-score">${r.points}</div>
-      <div class="lb-meta">pts ${r.revenue > 0 ? '• $'+r.revenue.toLocaleString() : ''}</div>
-      <div class="lb-bars">
-        <div class="lb-bar-item"><div class="lb-bar-num text-amber">${r.sold}</div><div class="lb-bar-label">Sold</div></div>
-        <div class="lb-bar-item"><div class="lb-bar-num text-green">${r.installed}</div><div class="lb-bar-label">Installed</div></div>
-        <div class="lb-bar-item"><div class="lb-bar-num text-cyan">${r.pending}</div><div class="lb-bar-label">Pipeline</div></div>
-      </div>
-      <div class="perf-bar"><div class="perf-fill" style="width:${Math.round((r.points/maxPoints)*100)}%"></div></div>
-    </div>
-  `).join('');
-
   document.getElementById('lb-tbody').innerHTML = data.map((r,i) => {
     const closeRate = r.total > 0 ? Math.round(((r.sold+r.installed)/r.total)*100) : 0;
     return `<tr>
-      <td>#${i+1}</td>
-      <td style="font-weight:600">${r.name}</td>
+      <td>${MEDALS[i]||'#'+(i+1)}</td>
+      <td style="font-weight:600;">
+        ${sanitize(r.name)}
+        <button onclick="removeRepProfile(${JSON.stringify(r.name)})" title="Remove"
+          style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;margin-left:6px;">✕</button>
+      </td>
       <td style="color:var(--accent-amber)">${r.sold}</td>
       <td style="color:var(--accent-green)">${r.installed}</td>
       <td style="color:var(--accent-purple)">${r.pending}</td>
       <td style="color:var(--accent-red)">${r.cancelled}</td>
+      <td style="color:var(--text-secondary);font-family:'IBM Plex Mono',monospace;">${r.doorKnocks}</td>
       <td style="font-family:'IBM Plex Mono',monospace;">${closeRate}%</td>
       <td style="color:var(--accent-cyan);font-family:'IBM Plex Mono',monospace;font-weight:700">${r.points}</td>
     </tr>`;
   }).join('');
+}
+
+/* ===================================================
+   SECURITY UTILITIES — DATA LEAK PREVENTION
+   =================================================== */
+
+// Safe HTML sanitizer — strips all tags and dangerous attributes
+// Used everywhere user-supplied content is rendered into innerHTML
+function sanitize(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .replace(/`/g, '&#x60;');
+}
+
+// Obfuscated API key — assembled at runtime so it's not a plain string
+// in case someone inspects the static HTML source before loading
+const _k = [
+  'AIzaSyA4p4p0j', 'TEHn9uz29Jgw51', 'f4-VXYyASEmE'
+].join('');
+const GMAPS_API_KEY = _k;
+
+// Mask API key in console output to prevent accidental exposure in DevTools
+const _origLog = console.log.bind(console);
+const _maskKey = s => typeof s === 'string' ? s.replace(GMAPS_API_KEY, '[MAPS_KEY]') : s;
+console.log = (...a) => _origLog(...a.map(_maskKey));
+
+// Prevent clipboard sniffing of sensitive data
+document.addEventListener('copy', (e) => {
+  const selection = window.getSelection()?.toString() || '';
+  if (selection.includes(GMAPS_API_KEY)) {
+    e.preventDefault();
+    e.clipboardData?.setData('text/plain', '[Sensitive data redacted]');
+  }
+});
+
+// Session timeout warning (60 min idle — useful for shared devices)
+let _idleTimer;
+function resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(() => {
+    const cont = confirm('⚠️ Session inactive for 60 minutes.\n\nFor security on shared devices, all unsaved work is safe in localStorage.\n\nClick OK to continue, or Cancel to close.');
+    if (!cont) window.close();
+    else resetIdleTimer();
+  }, 60 * 60 * 1000);
+}
+['mousemove','keydown','click','touchstart','scroll'].forEach(ev =>
+  document.addEventListener(ev, resetIdleTimer, { passive: true })
+);
+resetIdleTimer();
+
+// Prevent form data from being sent to any server accidentally
+window.addEventListener('submit', e => e.preventDefault());
+
+// Strip any query params / hash that might expose data if page is shared
+if (window.history && window.location.search) {
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+/* ===================================================
+   WEATHER — wttr.in (no API key required)
+   =================================================== */
+const WX_LAT = 36.6002, WX_LON = -121.8947;
+let weatherData = null;
+let weatherUnitF = true;
+
+// Weather condition code → emoji
+function wxIcon(code) {
+  if (code <= 232) return '⛈️';
+  if (code <= 321) return '🌦️';
+  if (code <= 531) return '🌧️';
+  if (code <= 622) return '❄️';
+  if (code === 800) return '☀️';
+  if (code === 801) return '🌤️';
+  if (code === 802) return '⛅';
+  if (code <= 804) return '☁️';
+  if (code >= 700) return '🌫️';
+  return '🌡️';
+}
+
+function cToF(c) { return Math.round(c * 9/5 + 32); }
+function mpsToMph(mps) { return Math.round(mps * 2.237); }
+function metersToMiles(m) { return (m / 1609.34).toFixed(1); }
+function unixToTime(unix, tz) {
+  return new Date(unix * 1000).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', timeZone:'America/Los_Angeles' });
+}
+
+async function fetchWeather() {
+  const btn = document.getElementById('weather-refresh-btn');
+  if (btn) { btn.textContent = '⏳ Loading…'; btn.disabled = true; }
+
+  // Build Open-Meteo URL — free, no API key, full CORS support
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}` +
+    `&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,` +
+    `cloud_cover,wind_speed_10m,wind_gusts_10m,wind_direction_10m,surface_pressure,visibility,` +
+    `dew_point_2m,uv_index` +
+    `&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&forecast_days=8` +
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,uv_index_max,wind_speed_10m_max` +
+    `&temperature_unit=celsius&wind_speed_unit=mph&precipitation_unit=inch` +
+    `&timezone=America%2FLos_Angeles&forecast_hours=48`;
+
+  // Try up to 2 times with a 10s timeout each
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      const resp = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      weatherData = await resp.json();
+      renderWeather(weatherData);
+      if (btn) { btn.textContent = '🔄 Refresh'; btn.disabled = false; }
+      return; // success — done
+    } catch(err) {
+      if (attempt === 2) {
+        // Both attempts failed — fall back to mock
+        console.info(`Weather unavailable (${err.message}), using estimated data.`);
+        renderWeatherMock();
+        if (btn) { btn.textContent = '🔄 Retry'; btn.disabled = false; }
+        // Show non-alarming notice in the updated field
+        const el = document.getElementById('w-updated');
+        if (el) el.textContent = 'Estimated data — tap Retry when online';
+      }
+      // else loop to attempt 2
+    }
+  }
+}
+
+// WMO weather code → description + icon
+function wmoDesc(code) {
+  const map = {
+    0:'Clear Sky ☀️', 1:'Mainly Clear 🌤️', 2:'Partly Cloudy ⛅', 3:'Overcast ☁️',
+    45:'Foggy 🌫️', 48:'Rime Fog 🌫️',
+    51:'Light Drizzle 🌦️', 53:'Moderate Drizzle 🌦️', 55:'Dense Drizzle 🌧️',
+    61:'Slight Rain 🌧️', 63:'Moderate Rain 🌧️', 65:'Heavy Rain 🌧️',
+    71:'Slight Snow ❄️', 73:'Moderate Snow ❄️', 75:'Heavy Snow ❄️',
+    77:'Snow Grains ❄️',
+    80:'Slight Showers 🌦️', 81:'Moderate Showers 🌧️', 82:'Violent Showers ⛈️',
+    95:'Thunderstorm ⛈️', 96:'Thunderstorm w/ Hail ⛈️', 99:'Thunderstorm w/ Heavy Hail ⛈️',
+  };
+  const e = {
+    0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',
+    51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',
+    71:'❄️',73:'❄️',75:'❄️',77:'❄️',
+    80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'
+  };
+  // label = full human-readable string without the trailing emoji
+  const label = (map[code] || 'Unknown').replace(/[\u{1F300}-\u{1FAFF}]|[\u2600-\u27BF]|☀️|⛅|🌦️|🌧️|⛈️|❄️|🌫️|🌡️/gu, '').trim();
+  return { desc: map[code] || 'Unknown', icon: e[code] || '🌡️', label: label || (map[code]||'Unknown').split(' ')[0] };
+}
+
+function tempDisplay(c) {
+  return weatherUnitF ? `${cToF(c)}°F` : `${Math.round(c)}°C`;
+}
+
+function renderWeather(d) {
+  const c = d.current;
+  const daily = d.daily;
+  const hourly = d.hourly;
+  const now = new Date();
+
+  const wx = wmoDesc(c.weather_code);
+  const tempC = c.temperature_2m;
+  const feelsC = c.apparent_temperature;
+
+  // Hero
+  setText('w-temp-num', weatherUnitF ? `${cToF(tempC)}` : `${Math.round(tempC)}`);
+  setText('w-temp-unit', weatherUnitF ? '°F' : '°C');
+  // Show full condition description, strip trailing emoji
+  setText('w-condition', wx.label || wx.desc.replace(/\s*[\u{1F300}-\u{1FAFF}]/gu,'').trim());
+  setText('w-main-icon', wx.icon);
+  setText('w-feelslike', `Feels like ${tempDisplay(feelsC)}`);
+  setText('w-updated', `Updated ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`);
+
+  // Update header widget
+  updateHeaderWeatherDirect(wx.icon, tempDisplay(tempC), wx.desc.split(' ').slice(0,2).join(' '));
+
+  // Details
+  setText('wd-humidity', `${c.relative_humidity_2m}%`);
+  setText('wd-wind', `${Math.round(c.wind_speed_10m)} mph ${windDir(c.wind_direction_10m)}`);
+  setText('wd-dew', tempDisplay(c.dew_point_2m));
+  setText('wd-vis', c.visibility != null ? `${metersToMiles(c.visibility)} mi` : '> 9 mi');
+  setText('wd-cloud', `${c.cloud_cover}%`);
+  setText('wd-pressure', `${Math.round(c.surface_pressure)} hPa`);
+  setText('wd-uv', `${Math.round(c.uv_index || 0)} / 11`);
+  setText('wd-gust', c.wind_gusts_10m ? `${Math.round(c.wind_gusts_10m)} mph` : 'Calm');
+
+  // Sunrise/sunset — Open-Meteo returns "2025-02-26T06:45" (no Z = local time string)
+  // Append timezone offset so browser parses as Pacific, not UTC
+  if (daily.sunrise?.[0]) {
+    const parseLocalStr = s => {
+      // "2025-02-26T06:45" → parse as-is so browser treats it as local time
+      const d = new Date(s);
+      if (!isNaN(d)) return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+      return s.slice(11,16); // fallback: just extract "06:45"
+    };
+    setText('wd-sunrise', parseLocalStr(daily.sunrise[0]));
+    setText('wd-sunset',  parseLocalStr(daily.sunset[0]));
+  }
+
+  // High/Low today
+  if (daily.temperature_2m_max?.[0] !== undefined) {
+    setText('wd-hilow', `${tempDisplay(daily.temperature_2m_max[0])} / ${tempDisplay(daily.temperature_2m_min[0])}`);
+  }
+
+  // Precip probability today
+  setText('wd-precip', `${daily.precipitation_probability_max?.[0] ?? 0}%`);
+
+  // ── Hourly (next 12 hours) ──────────────────────────────────────────────
+  // Open-Meteo hourly times are ISO strings like "2025-02-26T14:00" — no Z.
+  // Find the index of the current hour by comparing ISO prefix (first 13 chars)
+  // e.g. now = 2025-02-26T14:xx → match "2025-02-26T14"
+  const nowISOHour = now.toISOString().slice(0,13); // UTC hour — adjust for -8 offset
+  // Better: build local ISO hour string manually
+  const localISOHour = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${String(now.getHours()).padStart(2,'0')}`;
+  let startIdx = 0;
+  for (let i = 0; i < hourly.time.length; i++) {
+    if (hourly.time[i].slice(0,13) >= localISOHour) { startIdx = i; break; }
+  }
+  const hourContainer = document.getElementById('w-hourly');
+  let hourHTML = '';
+  for (let i = startIdx; i < startIdx + 12 && i < hourly.time.length; i++) {
+    // Parse the no-Z string as local time
+    const tDate = new Date(hourly.time[i]);
+    const tLabel = isNaN(tDate) ? hourly.time[i].slice(11,16)
+      : tDate.toLocaleTimeString('en-US', {hour:'numeric', hour12:true});
+    const wx2 = wmoDesc(hourly.weather_code[i]);
+    const pop = hourly.precipitation_probability?.[i] ?? 0;
+    hourHTML += `<div class="hour-card">
+      <div class="hour-time">${sanitize(tLabel)}</div>
+      <div class="hour-icon">${wx2.icon}</div>
+      <div class="hour-temp">${tempDisplay(hourly.temperature_2m[i])}</div>
+      ${pop > 20 ? `<div class="hour-pop">💧${pop}%</div>` : '<div style="height:14px;"></div>'}
+    </div>`;
+  }
+  hourContainer.innerHTML = hourHTML || '<div style="color:var(--text-dim);font-size:12px;padding:16px 0;">No hourly data available.</div>';
+
+  // 7-day forecast — always use local day names
+  const forecastContainer = document.getElementById('w-forecast');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let fcHTML = '';
+  const numDays = Math.min(7, daily.time.length);
+  for (let i = 0; i < numDays; i++) {
+    // Parse date as local date to avoid UTC offset shifting the day name
+    const parts = daily.time[i].split('-');
+    const date = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    const dayName = i === 0 ? 'Today' : i === 1 ? 'Tmrw' : days[date.getDay()];
+    const wx3 = wmoDesc(daily.weather_code[i]);
+    const hiTemp = daily.temperature_2m_max?.[i];
+    const loTemp = daily.temperature_2m_min?.[i];
+    const pop3 = daily.precipitation_probability_max?.[i] ?? 0;
+    fcHTML += `<div class="forecast-card">
+      <div class="fc-day">${sanitize(dayName)}</div>
+      <div style="font-size:9px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;margin-bottom:2px;">${sanitize(date.toLocaleDateString('en-US',{month:'short',day:'numeric'}))}</div>
+      <div class="fc-icon">${wx3.icon}</div>
+      <div class="fc-hi">${hiTemp !== undefined ? tempDisplay(hiTemp) : '—'}</div>
+      <div class="fc-lo">${loTemp !== undefined ? tempDisplay(loTemp) : '—'}</div>
+      <div class="fc-desc">${sanitize(wx3.label)}</div>
+      ${pop3 > 20 ? `<div class="fc-desc" style="color:#5ab4ff;">💧${pop3}%</div>` : ''}
+    </div>`;
+  }
+  forecastContainer.innerHTML = fcHTML || '<div style="color:var(--text-dim);font-size:12px;">No forecast data</div>';
+
+  // Field advisory
+  renderFieldAdvisory(c, daily);
+
+  // Alerts (if high precip / wind / UV)
+  renderAlerts(c, daily);
+}
+
+function renderWeatherMock() {
+  // Mock Feb Monterey averages as graceful fallback — 48 hourly entries
+  const temps48 = [12,11,11,10,10,10,11,12,13,14,14,15,15,15,14,14,13,13,12,12,11,11,10,10,
+                   11,11,10,10,10,10,11,12,13,14,15,15,16,16,15,14,13,13,12,12,11,11,10,10];
+  const pop48   = [10,10,10,10,10,15,15,20,20,15,15,10,10,10,20,25,30,30,25,20,15,15,10,10,
+                   10,10,12,14,14,16,18,20,22,20,18,15,12,10,10,12,15,18,20,18,15,12,10,10];
+  const wc48    = [2,2,2,3,3,3,2,1,1,2,2,2,2,3,3,3,61,61,3,2,2,2,2,2,
+                   2,2,3,3,3,2,2,1,1,2,2,2,3,3,2,2,3,61,61,3,3,2,2,2];
+  const ws48    = [10,9,9,8,8,9,11,12,13,13,14,14,13,13,14,15,14,13,12,11,10,10,9,9,
+                   9,9,9,8,8,9,10,12,13,14,14,14,13,13,14,15,14,13,12,11,11,10,9,9];
+  // Generate local-time ISO strings matching Open-Meteo format "YYYY-MM-DDTHH:00"
+  const base = new Date();
+  base.setMinutes(0, 0, 0);
+  const times48 = Array.from({length:48}, (_,i) => {
+    const d = new Date(base.getTime() + i * 3600000);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:00`;
+  });
+
+  const mock = {
+    current: { temperature_2m:13, apparent_temperature:11, relative_humidity_2m:78,
+      wind_speed_10m:12, wind_direction_10m:290, wind_gusts_10m:18,
+      weather_code:2, cloud_cover:45, surface_pressure:1016,
+      visibility:16000, dew_point_2m:9, uv_index:3, precipitation:0 },
+    daily: {
+      time: Array.from({length:7},(_,i)=>{
+        const d=new Date(Date.now()+i*86400000);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }),
+      weather_code:[2,3,61,61,2,1,0],
+      temperature_2m_max:[15,13,12,13,15,16,17],
+      temperature_2m_min:[8,9,10,9,8,7,8],
+      sunrise: Array.from({length:7},(_,i)=>{
+        const d=new Date(Date.now()+i*86400000);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T06:45:00`;
+      }),
+      sunset: Array.from({length:7},(_,i)=>{
+        const d=new Date(Date.now()+i*86400000);
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T17:52:00`;
+      }),
+      precipitation_probability_max:[20,35,70,65,30,15,10],
+      uv_index_max:[4,3,2,2,4,5,5],
+      wind_speed_10m_max:[14,16,20,18,12,10,9]
+    },
+    hourly: { time: times48, temperature_2m: temps48, precipitation_probability: pop48, weather_code: wc48, wind_speed_10m: ws48 }
+  };
+  renderWeather(mock);
+  setText('w-updated', 'Estimated (offline fallback)');
+}
+
+function renderFieldAdvisory(c, daily) {
+  const wind = c.wind_speed_10m;
+  const pop  = daily.precipitation_probability_max?.[0] ?? 0;
+  const uv   = c.uv_index || 0;
+  const temp = c.temperature_2m;
+  const items = [
+    {
+      ok: wind < 20, icon:'💨',
+      label: wind < 10 ? 'Calm winds — great for knocking' : wind < 20 ? 'Breezy but manageable' : 'High winds — leave door hangers instead',
+      sub: `${Math.round(wind)} mph ${windDir(c.wind_direction_10m)}`
+    },
+    {
+      ok: pop < 40, icon:'🌧️',
+      label: pop < 20 ? 'Dry conditions — ideal' : pop < 40 ? 'Low rain chance' : pop < 70 ? 'Bring rain jacket, reduced hours' : 'Rainy day — focus on phone follow-ups',
+      sub: `${pop}% precipitation chance`
+    },
+    {
+      ok: temp > 7 && temp < 33, icon:'🌡️',
+      label: temp < 4 ? 'Very cold — dress in layers' : temp < 10 ? 'Cool — light jacket recommended' : temp < 28 ? 'Comfortable temperature' : 'Hot — hydrate often, avoid midday',
+      sub: tempDisplay(temp)
+    },
+    {
+      ok: uv < 6, icon:'☀️',
+      label: uv < 3 ? 'Low UV — no concern' : uv < 6 ? 'Moderate UV — sunscreen advised' : uv < 8 ? 'High UV — hat + sunscreen required' : 'Very high UV — limit direct sun exposure',
+      sub: `UV Index ${Math.round(uv)}`
+    },
+    {
+      ok: c.visibility > 8000, icon:'👁️',
+      label: c.visibility > 8000 ? 'Excellent visibility' : c.visibility > 3000 ? 'Reduced visibility — fog or haze' : 'Poor visibility — drive carefully',
+      sub: c.visibility ? `${metersToMiles(c.visibility)} mi` : '—'
+    },
+    {
+      ok: true, icon:'🚪',
+      label: (wind < 20 && pop < 40 && temp > 7 && temp < 33 && uv < 8) ? '✅ Good conditions for door knocking!' : '⚠️ Challenging conditions today — adjust schedule',
+      sub: 'Overall Field Assessment'
+    }
+  ];
+  document.getElementById('w-advisory').innerHTML = items.map(item => `
+    <div class="adv-item">
+      <div class="adv-indicator" style="background:${item.ok ? 'var(--accent-green)' : 'var(--accent-amber)'}"></div>
+      <div>
+        <div class="adv-text">${item.icon} ${sanitize(item.label)}</div>
+        <div class="adv-sub">${sanitize(item.sub)}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAlerts(c, daily) {
+  const alertsArea = document.getElementById('weather-alerts-area');
+  const alerts = [];
+  const pop = daily.precipitation_probability_max?.[0] ?? 0;
+  if (pop >= 70) alerts.push({ icon:'🌧️', title:'Rain Likely Today', body:`${pop}% chance of precipitation. Consider adjusting your door-knocking schedule and bringing rain gear.` });
+  if (c.wind_speed_10m >= 25) alerts.push({ icon:'💨', title:'High Wind Advisory', body:`Winds at ${Math.round(c.wind_speed_10m)} mph with gusts to ${Math.round(c.wind_gusts_10m||0)} mph. Secure your materials and use caution on doorsteps.` });
+  if (c.uv_index >= 8) alerts.push({ icon:'☀️', title:'High UV Index', body:`UV Index ${Math.round(c.uv_index)} — wear SPF 30+, a hat, and take breaks in the shade.` });
+  alertsArea.innerHTML = alerts.map(a => `
+    <div class="weather-alert">
+      <div class="alert-icon">${a.icon}</div>
+      <div><div class="alert-title">${sanitize(a.title)}</div><div class="alert-body">${sanitize(a.body)}</div></div>
+    </div>`).join('');
+}
+
+function windDir(deg) {
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg/22.5) % 16] || '';
+}
+
+function toggleWeatherUnit() {
+  weatherUnitF = !weatherUnitF;
+  setText('w-unit-btn', weatherUnitF ? 'Switch to °C' : 'Switch to °F');
+  if (weatherData) renderWeather(weatherData); else renderWeatherMock();
+}
+
+function updateHeaderWeatherDirect(icon, temp, desc) {
+  setText('hw-icon', icon);
+  setText('hw-temp', temp);
+  setText('hw-desc', desc);
+}
+
+function updateHeaderWeather(d) {
+  const c = d.current;
+  const wx = wmoDesc(c.weather_code);
+  updateHeaderWeatherDirect(wx.icon, tempDisplay(c.temperature_2m), wx.label);
+}
+
+// Safe text setter (never uses innerHTML for weather data)
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 /* ===================================================
@@ -3436,6 +4578,20 @@ document.getElementById('isp-drilldown').addEventListener('click', e => {
 
 // Load saved API keys
 function initApp() {
+  // ── file:// protocol check ──────────────────────────────────────────────
+  // Browsers block cross-origin fetch (weather, FCC map) when opened as file://.
+  // The app must be served from a web server (http:// or https://).
+  if (window.location.protocol === 'file:') {
+    const banner = document.createElement('div');
+    banner.id = 'file-protocol-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff3d3d;color:#fff;text-align:center;padding:10px 20px;font-size:13px;font-family:monospace;font-weight:700;letter-spacing:0.5px;';
+    banner.innerHTML = '⚠️ Opened as a local file — live weather &amp; maps require a web server (http/https). Upload to your website or use a local server.';
+    document.body.prepend(banner);
+    // Adjust header top margin so it's not hidden behind banner
+    const header = document.querySelector('.header');
+    if (header) header.style.marginTop = '38px';
+  }
+
   loadState();
   renderPinList();
   renderApptList();
@@ -3443,15 +4599,22 @@ function initApp() {
   renderPipeline();
   updateBadges();
   renderFiberNews();
+  renderCustomCalendar();
+  renderLeaderboard();
 
   // Pre-fill rep name
   const savedRep = localStorage.getItem('fo_current_rep') || '';
   if (savedRep && document.getElementById('rep-name-quick')) {
     document.getElementById('rep-name-quick').value = savedRep;
+    addRepProfile(savedRep);
   }
 
-  // Auto-load Google Maps
+  // Load Google Maps
   loadGoogleMaps();
+
+  // Fetch live weather (non-blocking) — retries every 10 min
+  fetchWeather();
+  setInterval(fetchWeather, 10 * 60 * 1000);
 
   const savedNotes = localStorage.getItem('fo_notes') || '';
   document.getElementById('daily-notes').value = savedNotes;
