@@ -721,6 +721,57 @@ let state = {
   routeMode: false
 };
 
+// ===== GOOGLE MAPS API KEY =====
+// Replace with your Google Maps API key from https://console.cloud.google.com
+const GMAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
+
+// ===== ISP PLANS (price in $/mo) =====
+const ISP_PLANS = {
+  att: [
+    { value: 55,  label: 'AT&T Fiber 300 Mbps' },
+    { value: 65,  label: 'AT&T Fiber 500 Mbps' },
+    { value: 80,  label: 'AT&T Fiber 1 Gig' },
+    { value: 110, label: 'AT&T Fiber 2 Gig' },
+    { value: 180, label: 'AT&T Fiber 5 Gig' },
+  ],
+  frontier: [
+    { value: 50,  label: 'Frontier Fiber 500 Mbps' },
+    { value: 60,  label: 'Frontier Fiber 1 Gig' },
+    { value: 100, label: 'Frontier Fiber 2 Gig' },
+    { value: 150, label: 'Frontier Fiber 5 Gig' },
+  ],
+  spectrum: [
+    { value: 50,  label: 'Spectrum Internet 300 Mbps' },
+    { value: 70,  label: 'Spectrum Internet Ultra 500 Mbps' },
+    { value: 90,  label: 'Spectrum Internet Gig 1 Gbps' },
+  ]
+};
+
+// ===== FRONTIER ADDONS =====
+const FRONTIER_ADDONS = { copper: 10, whw: 10, vas: 5, voip: 10 };
+
+// ===== MOCK OUTAGE DATA =====
+const MOCK_OUTAGES = [
+  { id: 'OUT-001', provider: 'AT&T', area: 'Monterey, CA', affected: 120, status: 'investigating', started: '2026-02-28 08:00', updated: '2026-02-28 09:30' },
+  { id: 'OUT-002', provider: 'Frontier', area: 'Salinas, CA', affected: 45, status: 'resolved', started: '2026-02-27 14:00', updated: '2026-02-27 17:00' },
+  { id: 'OUT-003', provider: 'Spectrum', area: 'Santa Cruz, CA', affected: 200, status: 'monitoring', started: '2026-02-28 06:15', updated: '2026-02-28 10:00' },
+];
+
+// ===== GOOGLE MAPS MUTABLE GLOBALS =====
+let territories       = [];   // drawn territory polygons
+let drawingManager    = null; // google.maps.drawing.DrawingManager
+let directionsService = null; // google.maps.DirectionsService
+let directionsRenderer= null; // google.maps.DirectionsRenderer
+let heatmapLayer      = null; // google.maps.visualization.HeatmapLayer
+let svPanorama        = null; // google.maps.StreetViewPanorama
+let routeStops        = [];   // array of LatLng for route planning
+
+// ===== CONTEXT MENU STATE =====
+let ctxLatLng = null; // { lat, lng } of last right-click
+let ctxPinId  = null; // pin id if right-click was on a marker
+
+// ===== ACTIVITY LOG =====
+let dashActivityLog = [];
 
 
 function sanitize(str) {
