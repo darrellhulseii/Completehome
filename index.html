@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
 :root{
@@ -1236,6 +1235,7 @@ padding:32px;width:380px;text-align:center;
 
 <script>
 'use strict';
+
 /* ══════════════════════════════════════════════════════════════════
    COMPLETE HOME CRM v5
    Google Maps API + Gun.js P2P Sync + Custom Auth
@@ -1742,948 +1742,901 @@ const c=STATUS_CFG[h.status]?.color||’#64748b’;
 return `<div class="tl-item"> <div class="tl-dot" style="background:${c}22;color:${c};border-color:${c}55">●</div> <div class="tl-body"> <div class="tl-act">${esc(h.action||'')}</div> ${h.note?`<div class="tl-note">${esc(h.note)}</div>`:''} <div class="tl-when">${ago(h.ts)}</div> </div> </div>`;
 }).join(’’);
 }
-</script>
 
-<script>
 // ─── SALE & INSTALL SYSTEM ────────────────────────────────────────
 function openSaleModal(pinId){
-  _saleForPin = pinId;
-  const pin = DB.pins.find(p=>p.id===pinId); if(!pin) return;
-  // Pre-fill customer info
-  document.getElementById('sale-cust-name').value  = [pin.fname,pin.lname].filter(Boolean).join(' ');
-  document.getElementById('sale-cust-phone').value = pin.phone||'';
-  document.getElementById('sale-cust-addr').value  = pin.addr||'';
-  // Default install date to 2 weeks out
-  const d = new Date(); d.setDate(d.getDate()+14);
-  document.getElementById('sale-date').value = d.toISOString().split('T')[0];
-  document.getElementById('sale-notes').value = '';
-  updateSaleBase();
-  openModal('modal-sale');
+_saleForPin = pinId;
+const pin = DB.pins.find(p=>p.id===pinId); if(!pin) return;
+// Pre-fill customer info
+document.getElementById(‘sale-cust-name’).value  = [pin.fname,pin.lname].filter(Boolean).join(’ ‘);
+document.getElementById(‘sale-cust-phone’).value = pin.phone||’’;
+document.getElementById(‘sale-cust-addr’).value  = pin.addr||’’;
+// Default install date to 2 weeks out
+const d = new Date(); d.setDate(d.getDate()+14);
+document.getElementById(‘sale-date’).value = d.toISOString().split(‘T’)[0];
+document.getElementById(‘sale-notes’).value = ‘’;
+updateSaleBase();
+openModal(‘modal-sale’);
 }
 
 function updateSaleBase(){
-  const prod = document.getElementById('sale-product')?.value||'';
-  const base = PRODUCTS[prod] || 0;
-  const revEl = document.getElementById('sale-rev');
-  if(revEl && (!revEl.value || revEl.dataset.autoFilled==='1')){
-    revEl.value = base || '';
-    revEl.dataset.autoFilled = '1';
-  }
+const prod = document.getElementById(‘sale-product’)?.value||’’;
+const base = PRODUCTS[prod] || 0;
+const revEl = document.getElementById(‘sale-rev’);
+if(revEl && (!revEl.value || revEl.dataset.autoFilled===‘1’)){
+revEl.value = base || ‘’;
+revEl.dataset.autoFilled = ‘1’;
+}
 }
 
 function confirmSale(){
-  const pin = DB.pins.find(p=>p.id===_saleForPin); if(!pin) return;
-  const product    = document.getElementById('sale-product').value;
-  const revenue    = +document.getElementById('sale-rev').value || 0;
-  const instDate   = document.getElementById('sale-date').value;
-  const instStatus = document.getElementById('sale-inst-status').value;
-  const notes      = document.getElementById('sale-notes').value.trim();
-  const custName   = document.getElementById('sale-cust-name').value.trim();
-  const custAddr   = document.getElementById('sale-cust-addr').value.trim()||pin.addr;
-  const custPhone  = document.getElementById('sale-cust-phone').value.trim()||pin.phone;
+const pin = DB.pins.find(p=>p.id===_saleForPin); if(!pin) return;
+const product    = document.getElementById(‘sale-product’).value;
+const revenue    = +document.getElementById(‘sale-rev’).value || 0;
+const instDate   = document.getElementById(‘sale-date’).value;
+const instStatus = document.getElementById(‘sale-inst-status’).value;
+const notes      = document.getElementById(‘sale-notes’).value.trim();
+const custName   = document.getElementById(‘sale-cust-name’).value.trim();
+const custAddr   = document.getElementById(‘sale-cust-addr’).value.trim()||pin.addr;
+const custPhone  = document.getElementById(‘sale-cust-phone’).value.trim()||pin.phone;
 
-  if(!revenue){ toast('Enter a revenue amount', 'warn'); return; }
-  if(!instDate){ toast('Select an install date', 'warn'); return; }
+if(!revenue){ toast(‘Enter a revenue amount’, ‘warn’); return; }
+if(!instDate){ toast(‘Select an install date’, ‘warn’); return; }
 
-  // Update the pin
-  pin.status      = 'sold';
-  pin.revenue     = revenue;
-  pin.product     = product;
-  pin.installDate = instDate;
-  pin.installStatus = instStatus;
-  pin.updatedAt   = tsNow();
-  if(!pin.history) pin.history=[];
-  pin.history.unshift({
-    action:`Sold — ${product} · $${revenue.toLocaleString()}`,
-    status:'sold', note:notes||`Install: ${dateStr(instDate)}`, ts:tsNow()
-  });
+// Update the pin
+pin.status      = ‘sold’;
+pin.revenue     = revenue;
+pin.product     = product;
+pin.installDate = instDate;
+pin.installStatus = instStatus;
+pin.updatedAt   = tsNow();
+if(!pin.history) pin.history=[];
+pin.history.unshift({
+action:`Sold — ${product} · $${revenue.toLocaleString()}`,
+status:‘sold’, note:notes||`Install: ${dateStr(instDate)}`, ts:tsNow()
+});
 
-  // Create install record
-  const installId = IDs.install++;
-  const install = {
-    id:         installId,
-    pinId:      pin.id,
-    custName:   custName || [pin.fname,pin.lname].filter(Boolean).join(' ') || 'Customer',
-    custPhone:  custPhone,
-    addr:       custAddr,
-    product:    product,
-    revenue:    revenue,
-    installDate: instDate,
-    status:     instStatus,
-    rep:        pin.rep || currentUser?.alias || '',
-    notes:      notes,
-    soldAt:     tsNow(),
-    createdAt:  tsNow(),
-    updatedAt:  tsNow(),
-  };
-  DB.installs.push(install);
-  pin.installId = installId;
+// Create install record
+const installId = IDs.install++;
+const install = {
+id:         installId,
+pinId:      pin.id,
+custName:   custName || [pin.fname,pin.lname].filter(Boolean).join(’ ’) || ‘Customer’,
+custPhone:  custPhone,
+addr:       custAddr,
+product:    product,
+revenue:    revenue,
+installDate: instDate,
+status:     instStatus,
+rep:        pin.rep || currentUser?.alias || ‘’,
+notes:      notes,
+soldAt:     tsNow(),
+createdAt:  tsNow(),
+updatedAt:  tsNow(),
+};
+DB.installs.push(install);
+pin.installId = installId;
 
-  // Sync, render, close
-  updatePinOnMap(pin);
-  saveAll(pin.id);
-  renderAll();
-  updateMapStats();
-  closeModal('modal-sale');
-  if(activePin === pin.id) renderDrawer(pin);
-  addFeed('💰', `SOLD — ${product}`, `$${revenue.toLocaleString()} · ${custName}`);
-  toast(`💰 Sale recorded! $${revenue.toLocaleString()} — install ${dateStr(instDate)}`, 'ok');
+// Sync, render, close
+updatePinOnMap(pin);
+saveAll(pin.id);
+renderAll();
+updateMapStats();
+closeModal(‘modal-sale’);
+if(activePin === pin.id) renderDrawer(pin);
+addFeed(‘💰’, `SOLD — ${product}`, `$${revenue.toLocaleString()} · ${custName}`);
+toast(`💰 Sale recorded! $${revenue.toLocaleString()} — install ${dateStr(instDate)}`, ‘ok’);
 }
 
 function openInstallEdit(pinId){
-  const pin  = DB.pins.find(p=>p.id===pinId); if(!pin) return;
-  const inst = DB.installs.find(i=>i.id===pin.installId);
-  activeInstId = inst?.id || null;
-  document.getElementById('inst-date').value    = inst?.installDate || pin.installDate || '';
-  document.getElementById('inst-status').value  = inst?.status || pin.installStatus || 'scheduled';
-  document.getElementById('inst-product').value = inst?.product || pin.product || '';
-  document.getElementById('inst-rev').value     = inst?.revenue || pin.revenue || '';
-  document.getElementById('inst-notes').value   = inst?.notes || '';
-  openModal('modal-install');
+const pin  = DB.pins.find(p=>p.id===pinId); if(!pin) return;
+const inst = DB.installs.find(i=>i.id===pin.installId);
+activeInstId = inst?.id || null;
+document.getElementById(‘inst-date’).value    = inst?.installDate || pin.installDate || ‘’;
+document.getElementById(‘inst-status’).value  = inst?.status || pin.installStatus || ‘scheduled’;
+document.getElementById(‘inst-product’).value = inst?.product || pin.product || ‘’;
+document.getElementById(‘inst-rev’).value     = inst?.revenue || pin.revenue || ‘’;
+document.getElementById(‘inst-notes’).value   = inst?.notes || ‘’;
+openModal(‘modal-install’);
 }
 
 function saveInstall(){
-  const inst = DB.installs.find(i=>i.id===activeInstId);
-  if(!inst){ toast('Install not found','err'); return; }
-  inst.installDate = document.getElementById('inst-date').value;
-  inst.status      = document.getElementById('inst-status').value;
-  inst.revenue     = +document.getElementById('inst-rev').value || inst.revenue;
-  inst.notes       = document.getElementById('inst-notes').value.trim();
-  inst.updatedAt   = tsNow();
-  // Sync back to pin
-  const pin = DB.pins.find(p=>p.id===inst.pinId);
-  if(pin){
-    pin.installDate   = inst.installDate;
-    pin.installStatus = inst.status;
-    pin.revenue       = inst.revenue;
-    pin.updatedAt     = tsNow();
-    updatePinOnMap(pin);
-    if(activePin===pin.id) renderDrawer(pin);
-  }
-  saveAll();
-  renderAll();
-  closeModal('modal-install');
-  toast('Install updated', 'ok');
+const inst = DB.installs.find(i=>i.id===activeInstId);
+if(!inst){ toast(‘Install not found’,‘err’); return; }
+inst.installDate = document.getElementById(‘inst-date’).value;
+inst.status      = document.getElementById(‘inst-status’).value;
+inst.revenue     = +document.getElementById(‘inst-rev’).value || inst.revenue;
+inst.notes       = document.getElementById(‘inst-notes’).value.trim();
+inst.updatedAt   = tsNow();
+// Sync back to pin
+const pin = DB.pins.find(p=>p.id===inst.pinId);
+if(pin){
+pin.installDate   = inst.installDate;
+pin.installStatus = inst.status;
+pin.revenue       = inst.revenue;
+pin.updatedAt     = tsNow();
+updatePinOnMap(pin);
+if(activePin===pin.id) renderDrawer(pin);
+}
+saveAll();
+renderAll();
+closeModal(‘modal-install’);
+toast(‘Install updated’, ‘ok’);
 }
 
 // ─── RENDER: INSTALLS VIEW ────────────────────────────────────────
 function renderInstalls(){
-  const q   = (document.getElementById('inst-search')?.value||'').toLowerCase();
-  const flt = document.getElementById('inst-filter')?.value||'all';
-  const now = new Date();
+const q   = (document.getElementById(‘inst-search’)?.value||’’).toLowerCase();
+const flt = document.getElementById(‘inst-filter’)?.value||‘all’;
+const now = new Date();
 
-  let list = [...DB.installs];
-  // Add overdue logic
-  list = list.map(i=>({
-    ...i,
-    _status: i.status==='completed'||i.status==='cancelled' ? i.status :
-             (i.installDate && new Date(i.installDate) < now ? 'overdue' : 'scheduled')
-  }));
-  if(flt!=='all') list=list.filter(i=>i._status===flt);
-  if(q) list=list.filter(i=>(i.custName||'').toLowerCase().includes(q)||(i.addr||'').toLowerCase().includes(q)||(i.product||'').toLowerCase().includes(q));
-  list.sort((a,b)=>new Date(a.installDate||'9999')-new Date(b.installDate||'9999'));
+let list = […DB.installs];
+// Add overdue logic
+list = list.map(i=>({
+…i,
+_status: i.status===‘completed’||i.status===‘cancelled’ ? i.status :
+(i.installDate && new Date(i.installDate) < now ? ‘overdue’ : ‘scheduled’)
+}));
+if(flt!==‘all’) list=list.filter(i=>i._status===flt);
+if(q) list=list.filter(i=>(i.custName||’’).toLowerCase().includes(q)||(i.addr||’’).toLowerCase().includes(q)||(i.product||’’).toLowerCase().includes(q));
+list.sort((a,b)=>new Date(a.installDate||‘9999’)-new Date(b.installDate||‘9999’));
 
-  // KPI tiles
-  const sched   = DB.installs.filter(i=>i.status==='scheduled').length;
-  const done    = DB.installs.filter(i=>i.status==='completed').length;
-  const overdue = DB.installs.filter(i=>i.status!=='completed'&&i.status!=='cancelled'&&i.installDate&&new Date(i.installDate)<now).length;
-  const totalRev= DB.installs.reduce((t,i)=>t+(+i.revenue||0),0);
-  document.getElementById('inst-kpis').innerHTML = `
-    <div class="install-kpi" style="--kc:#3b82f6"><div class="kpi-lbl">Scheduled</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">${sched}</div></div>
-    <div class="install-kpi" style="--kc:#059669"><div class="kpi-lbl">Completed</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">${done}</div></div>
-    <div class="install-kpi" style="--kc:#d97706"><div class="kpi-lbl">Overdue</div><div class="kpi-val" style="font-family:var(--head);font-size:24px;color:${overdue>0?'#fbbf24':'inherit'}">${overdue}</div></div>
-    <div class="install-kpi" style="--kc:#059669"><div class="kpi-lbl">Install Revenue</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">$${(totalRev/1000).toFixed(0)}K</div></div>`;
+// KPI tiles
+const sched   = DB.installs.filter(i=>i.status===‘scheduled’).length;
+const done    = DB.installs.filter(i=>i.status===‘completed’).length;
+const overdue = DB.installs.filter(i=>i.status!==‘completed’&&i.status!==‘cancelled’&&i.installDate&&new Date(i.installDate)<now).length;
+const totalRev= DB.installs.reduce((t,i)=>t+(+i.revenue||0),0);
+document.getElementById(‘inst-kpis’).innerHTML = ` <div class="install-kpi" style="--kc:#3b82f6"><div class="kpi-lbl">Scheduled</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">${sched}</div></div> <div class="install-kpi" style="--kc:#059669"><div class="kpi-lbl">Completed</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">${done}</div></div> <div class="install-kpi" style="--kc:#d97706"><div class="kpi-lbl">Overdue</div><div class="kpi-val" style="font-family:var(--head);font-size:24px;color:${overdue>0?'#fbbf24':'inherit'}">${overdue}</div></div> <div class="install-kpi" style="--kc:#059669"><div class="kpi-lbl">Install Revenue</div><div class="kpi-val" style="font-family:var(--head);font-size:24px">$${(totalRev/1000).toFixed(0)}K</div></div>`;
 
-  document.getElementById('inst-sub').textContent = `${list.length} installs · $${(totalRev/1000).toFixed(0)}K revenue`;
-  document.getElementById('nav-inst-ct').textContent = DB.installs.length;
+document.getElementById(‘inst-sub’).textContent = `${list.length} installs · $${(totalRev/1000).toFixed(0)}K revenue`;
+document.getElementById(‘nav-inst-ct’).textContent = DB.installs.length;
 
-  document.getElementById('inst-tbody').innerHTML = list.length ? list.map((i,idx)=>{
-    const statusCls = i._status;
-    return `<tr onclick="openInstallById(${i.id})">
-      <td class="tbl-mono">${idx+1}</td>
-      <td><div class="tbl-name">${esc(i.custName||'—')}</div><div class="tbl-mono" style="font-size:10px;color:var(--t2)">${esc(i.custPhone||'')}</div></td>
-      <td class="tbl-addr" style="max-width:180px">${esc(i.addr||'—')}</td>
-      <td style="font-size:12px;color:var(--t1)">${esc(i.product||'—')}</td>
-      <td class="tbl-mono" style="color:#34d399;font-weight:700">$${Number(i.revenue||0).toLocaleString()}</td>
-      <td class="tbl-mono">${i.installDate?dateStr(i.installDate):'—'}</td>
-      <td><span class="ibadge ${statusCls}">${statusCls.charAt(0).toUpperCase()+statusCls.slice(1)}</span></td>
-      <td style="font-size:11.5px;color:var(--t1)">${esc(repName(i.rep))}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openInstallById(${i.id})">Edit</button></td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="9"><div class="empty-state"><div class="empty-ico">⚡</div><div class="empty-title">No installs yet</div><div class="empty-sub">Mark leads as sold to create install records.</div></div></td></tr>`;
+document.getElementById(‘inst-tbody’).innerHTML = list.length ? list.map((i,idx)=>{
+const statusCls = i._status;
+return `<tr onclick="openInstallById(${i.id})"> <td class="tbl-mono">${idx+1}</td> <td><div class="tbl-name">${esc(i.custName||'—')}</div><div class="tbl-mono" style="font-size:10px;color:var(--t2)">${esc(i.custPhone||'')}</div></td> <td class="tbl-addr" style="max-width:180px">${esc(i.addr||'—')}</td> <td style="font-size:12px;color:var(--t1)">${esc(i.product||'—')}</td> <td class="tbl-mono" style="color:#34d399;font-weight:700">$${Number(i.revenue||0).toLocaleString()}</td> <td class="tbl-mono">${i.installDate?dateStr(i.installDate):'—'}</td> <td><span class="ibadge ${statusCls}">${statusCls.charAt(0).toUpperCase()+statusCls.slice(1)}</span></td> <td style="font-size:11.5px;color:var(--t1)">${esc(repName(i.rep))}</td> <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openInstallById(${i.id})">Edit</button></td> </tr>`;
+}).join(’’) : `<tr><td colspan="9"><div class="empty-state"><div class="empty-ico">⚡</div><div class="empty-title">No installs yet</div><div class="empty-sub">Mark leads as sold to create install records.</div></div></td></tr>`;
 }
 
 function openInstallById(id){
-  activeInstId = id;
-  const inst = DB.installs.find(i=>i.id===id); if(!inst) return;
-  document.getElementById('inst-date').value    = inst.installDate||'';
-  document.getElementById('inst-status').value  = inst.status||'scheduled';
-  document.getElementById('inst-product').value = inst.product||'';
-  document.getElementById('inst-rev').value     = inst.revenue||'';
-  document.getElementById('inst-notes').value   = inst.notes||'';
-  openModal('modal-install');
+activeInstId = id;
+const inst = DB.installs.find(i=>i.id===id); if(!inst) return;
+document.getElementById(‘inst-date’).value    = inst.installDate||’’;
+document.getElementById(‘inst-status’).value  = inst.status||‘scheduled’;
+document.getElementById(‘inst-product’).value = inst.product||’’;
+document.getElementById(‘inst-rev’).value     = inst.revenue||’’;
+document.getElementById(‘inst-notes’).value   = inst.notes||’’;
+openModal(‘modal-install’);
 }
 
 // ─── RENDER: LEADS TABLE ──────────────────────────────────────────
 function renderLeads(){
-  const q   = (document.getElementById('leads-search')?.value||'').toLowerCase();
-  const flt = document.getElementById('leads-filter')?.value||'all';
-  let pins  = [...DB.pins];
-  if(flt!=='all') pins=pins.filter(p=>p.status===flt);
-  if(q) pins=pins.filter(p=>{
-    const nm=((p.fname||'')+' '+(p.lname||'')).toLowerCase();
-    return nm.includes(q)||(p.addr||'').toLowerCase().includes(q)||(p.phone||'').includes(q);
-  });
-  // Reps only see their own leads
-  if(currentUser?.role==='rep') pins=pins.filter(p=>p.rep===currentUser.alias);
-  pins.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+const q   = (document.getElementById(‘leads-search’)?.value||’’).toLowerCase();
+const flt = document.getElementById(‘leads-filter’)?.value||‘all’;
+let pins  = […DB.pins];
+if(flt!==‘all’) pins=pins.filter(p=>p.status===flt);
+if(q) pins=pins.filter(p=>{
+const nm=((p.fname||’’)+’ ‘+(p.lname||’’)).toLowerCase();
+return nm.includes(q)||(p.addr||’’).toLowerCase().includes(q)||(p.phone||’’).includes(q);
+});
+// Reps only see their own leads
+if(currentUser?.role===‘rep’) pins=pins.filter(p=>p.rep===currentUser.alias);
+pins.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
 
-  document.getElementById('leads-sub').textContent = `${pins.length.toLocaleString()} leads · Click row to view`;
-  document.getElementById('nav-leads-ct').textContent = DB.pins.length;
+document.getElementById(‘leads-sub’).textContent = `${pins.length.toLocaleString()} leads · Click row to view`;
+document.getElementById(‘nav-leads-ct’).textContent = DB.pins.length;
 
-  document.getElementById('leads-tbody').innerHTML = pins.length ? pins.map((p,i)=>{
-    const sc = STATUS_CFG[p.status]||STATUS_CFG.nh;
-    const nm = [p.fname,p.lname].filter(Boolean).join(' ')||'—';
-    const latestNote = (p.history||[]).find(h=>h.note)?.note||'';
-    return `<tr onclick="openDrawer(${p.id})">
-      <td class="tbl-mono" style="color:var(--t3)">${i+1}</td>
-      <td><span class="sbadge ${p.status||'nh'}">${sc.label}</span></td>
-      <td><div class="tbl-name">${esc(nm)}</div></td>
-      <td class="tbl-addr">${esc(p.addr||'—')}</td>
-      <td class="tbl-mono">${esc(p.phone||'—')}</td>
-      <td style="font-size:11.5px;color:var(--t1)">${esc(repName(p.rep))}</td>
-      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--t2)">${esc(latestNote)}</td>
-      <td class="tbl-mono" style="color:var(--t3);font-size:10.5px">${ago(p.updatedAt)}</td>
-      <td class="tbl-mono" style="color:#34d399;font-weight:700">${p.revenue?'$'+Number(p.revenue).toLocaleString():''}</td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="9"><div class="empty-state"><div class="empty-ico">📋</div><div class="empty-title">No leads match</div></div></td></tr>`;
+document.getElementById(‘leads-tbody’).innerHTML = pins.length ? pins.map((p,i)=>{
+const sc = STATUS_CFG[p.status]||STATUS_CFG.nh;
+const nm = [p.fname,p.lname].filter(Boolean).join(’ ‘)||’—’;
+const latestNote = (p.history||[]).find(h=>h.note)?.note||’’;
+return `<tr onclick="openDrawer(${p.id})"> <td class="tbl-mono" style="color:var(--t3)">${i+1}</td> <td><span class="sbadge ${p.status||'nh'}">${sc.label}</span></td> <td><div class="tbl-name">${esc(nm)}</div></td> <td class="tbl-addr">${esc(p.addr||'—')}</td> <td class="tbl-mono">${esc(p.phone||'—')}</td> <td style="font-size:11.5px;color:var(--t1)">${esc(repName(p.rep))}</td> <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--t2)">${esc(latestNote)}</td> <td class="tbl-mono" style="color:var(--t3);font-size:10.5px">${ago(p.updatedAt)}</td> <td class="tbl-mono" style="color:#34d399;font-weight:700">${p.revenue?'$'+Number(p.revenue).toLocaleString():''}</td> </tr>`;
+}).join(’’) : `<tr><td colspan="9"><div class="empty-state"><div class="empty-ico">📋</div><div class="empty-title">No leads match</div></div></td></tr>`;
 }
 
 // ─── RENDER: DASHBOARD ────────────────────────────────────────────
 function renderDash(){
-  const pins   = DB.pins;
-  const sold   = pins.filter(p=>p.status==='sold');
-  const rev    = sold.reduce((t,p)=>t+(+p.revenue||0),0);
-  const close  = pins.length>0 ? (sold.length/pins.length*100).toFixed(1)+'%' : '0%';
-  const avg    = sold.length>0 ? Math.round(rev/sold.length) : 0;
-  setKpi('k-leads', pins.length.toLocaleString());
-  setKpi('k-rev',   '$'+rev.toLocaleString());
-  setKpi('k-close', close);
-  setKpi('k-sales', sold.length.toLocaleString());
-  setKpi('k-avg',   '$'+avg.toLocaleString());
-  setKpi('k-inst',  DB.installs.length.toLocaleString());
+const pins   = DB.pins;
+const sold   = pins.filter(p=>p.status===‘sold’);
+const rev    = sold.reduce((t,p)=>t+(+p.revenue||0),0);
+const close  = pins.length>0 ? (sold.length/pins.length*100).toFixed(1)+’%’ : ‘0%’;
+const avg    = sold.length>0 ? Math.round(rev/sold.length) : 0;
+setKpi(‘k-leads’, pins.length.toLocaleString());
+setKpi(‘k-rev’,   ‘$’+rev.toLocaleString());
+setKpi(‘k-close’, close);
+setKpi(‘k-sales’, sold.length.toLocaleString());
+setKpi(‘k-avg’,   ‘$’+avg.toLocaleString());
+setKpi(‘k-inst’,  DB.installs.length.toLocaleString());
 
-  // Status breakdown chips
-  const counts = {};
-  Object.keys(STATUS_CFG).forEach(k=>counts[k]=0);
-  pins.forEach(p=>{ if(counts[p.status]!==undefined)counts[p.status]++; });
-  document.getElementById('status-total-sub').textContent = `${pins.length} total`;
-  document.getElementById('status-breakdown').innerHTML = Object.entries(STATUS_CFG).map(([k,v])=>{
-    const pct = pins.length>0?Math.round(counts[k]/pins.length*100):0;
-    return `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11.5px">
-        <span style="color:${v.color};font-weight:600">${v.label}</span>
-        <span style="font-family:var(--mono);color:var(--t2)">${counts[k]} · ${pct}%</span>
-      </div>
-      <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${v.color}"></div></div>
-    </div>`;
-  }).join('');
+// Status breakdown chips
+const counts = {};
+Object.keys(STATUS_CFG).forEach(k=>counts[k]=0);
+pins.forEach(p=>{ if(counts[p.status]!==undefined)counts[p.status]++; });
+document.getElementById(‘status-total-sub’).textContent = `${pins.length} total`;
+document.getElementById(‘status-breakdown’).innerHTML = Object.entries(STATUS_CFG).map(([k,v])=>{
+const pct = pins.length>0?Math.round(counts[k]/pins.length*100):0;
+return `<div style="margin-bottom:10px"> <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:11.5px"> <span style="color:${v.color};font-weight:600">${v.label}</span> <span style="font-family:var(--mono);color:var(--t2)">${counts[k]} · ${pct}%</span> </div> <div class="prog"><div class="prog-fill" style="width:${pct}%;background:${v.color}"></div></div> </div>`;
+}).join(’’);
 
-  // Recent installs
-  const recent=[...DB.installs].sort((a,b)=>new Date(b.soldAt||b.createdAt)-new Date(a.soldAt||a.createdAt)).slice(0,4);
-  document.getElementById('dash-installs').innerHTML = recent.length ? recent.map(i=>`
-    <div class="feed-item" style="padding:9px 16px;cursor:pointer" onclick="openInstallById(${i.id})">
-      <div class="feed-ico" style="background:var(--jade-g)">⚡</div>
-      <div class="feed-body">
-        <div class="feed-title">${esc(i.custName||'—')} · <span style="color:#34d399">$${Number(i.revenue||0).toLocaleString()}</span></div>
-        <div class="feed-sub">${esc(i.product||'—')} · ${i.installDate?dateStr(i.installDate):'No date set'}</div>
-        <div class="feed-when">${esc(repName(i.rep))} · <span class="ibadge ${i.status||'scheduled'}" style="font-size:8px">${i.status||'Scheduled'}</span></div>
-      </div>
-    </div>`).join('') : '<div class="empty-state"><div class="empty-ico">⚡</div><div class="empty-sub">No installs yet — mark leads as sold</div></div>';
+// Recent installs
+const recent=[…DB.installs].sort((a,b)=>new Date(b.soldAt||b.createdAt)-new Date(a.soldAt||a.createdAt)).slice(0,4);
+document.getElementById(‘dash-installs’).innerHTML = recent.length ? recent.map(i=>` <div class="feed-item" style="padding:9px 16px;cursor:pointer" onclick="openInstallById(${i.id})"> <div class="feed-ico" style="background:var(--jade-g)">⚡</div> <div class="feed-body"> <div class="feed-title">${esc(i.custName||'—')} · <span style="color:#34d399">$${Number(i.revenue||0).toLocaleString()}</span></div> <div class="feed-sub">${esc(i.product||'—')} · ${i.installDate?dateStr(i.installDate):'No date set'}</div> <div class="feed-when">${esc(repName(i.rep))} · <span class="ibadge ${i.status||'scheduled'}" style="font-size:8px">${i.status||'Scheduled'}</span></div> </div> </div>`).join(’’) : ‘<div class="empty-state"><div class="empty-ico">⚡</div><div class="empty-sub">No installs yet — mark leads as sold</div></div>’;
 
-  // Top reps (top 3)
-  const stats=DB.reps.map(r=>{
-    const rSold=DB.pins.filter(p=>p.rep===(r.alias||r.id)&&p.status==='sold');
-    const rRev=rSold.reduce((t,p)=>t+(+p.revenue||0),0);
-    return{r,sold:rSold.length,rev:rRev,leads:DB.pins.filter(p=>p.rep===(r.alias||r.id)).length};
-  }).sort((a,b)=>b.rev-a.rev).slice(0,3);
-  document.getElementById('dash-top-reps').innerHTML = stats.length ? stats.map(({r,sold,rev,leads},i)=>{
-    const medal=['🥇','🥈','🥉'][i];
-    const col=r.color||'#3b82f6';
-    return `<div class="lb-row" style="padding:10px 16px">
-      <div class="lb-rank">${medal}</div>
-      <div class="lb-av" style="background:${col}18;color:${col};border:1px solid ${col}33">${inits(r)}</div>
-      <div class="lb-info"><div class="lb-name">${esc(r.fname||'')} ${esc(r.lname||'')}</div><div class="lb-role">${leads} leads · ${sold} sold</div></div>
-      <div class="lb-stat"><div class="lb-stat-val" style="color:#34d399">$${(rev/1000).toFixed(0)}K</div><div class="lb-stat-lbl">Revenue</div></div>
-    </div>`;
-  }).join('') : '<div class="empty-state" style="padding:20px"><div class="empty-sub">No reps added yet</div></div>';
+// Top reps (top 3)
+const stats=DB.reps.map(r=>{
+const rSold=DB.pins.filter(p=>p.rep===(r.alias||r.id)&&p.status===‘sold’);
+const rRev=rSold.reduce((t,p)=>t+(+p.revenue||0),0);
+return{r,sold:rSold.length,rev:rRev,leads:DB.pins.filter(p=>p.rep===(r.alias||r.id)).length};
+}).sort((a,b)=>b.rev-a.rev).slice(0,3);
+document.getElementById(‘dash-top-reps’).innerHTML = stats.length ? stats.map(({r,sold,rev,leads},i)=>{
+const medal=[‘🥇’,‘🥈’,‘🥉’][i];
+const col=r.color||’#3b82f6’;
+return `<div class="lb-row" style="padding:10px 16px"> <div class="lb-rank">${medal}</div> <div class="lb-av" style="background:${col}18;color:${col};border:1px solid ${col}33">${inits(r)}</div> <div class="lb-info"><div class="lb-name">${esc(r.fname||'')} ${esc(r.lname||'')}</div><div class="lb-role">${leads} leads · ${sold} sold</div></div> <div class="lb-stat"><div class="lb-stat-val" style="color:#34d399">$${(rev/1000).toFixed(0)}K</div><div class="lb-stat-lbl">Revenue</div></div> </div>`;
+}).join(’’) : ‘<div class="empty-state" style="padding:20px"><div class="empty-sub">No reps added yet</div></div>’;
 
-  // Live feed
-  const feedEl=document.getElementById('dash-feed');
-  if(feedEl){
-    const items=DB.feed.slice(0,15);
-    feedEl.innerHTML=items.length?items.map(f=>`
-      <div class="feed-item">
-        <div class="feed-ico" style="background:var(--s3)">${f.ico||'📍'}</div>
-        <div class="feed-body">
-          <div class="feed-title">${esc(f.title||'')}</div>
-          <div class="feed-sub">${esc(f.sub||'')}</div>
-          <div class="feed-when">${ago(f.ts)}</div>
-        </div>
-      </div>`).join('') :
-      '<div class="empty-state" style="padding:24px"><div class="empty-ico">📡</div><div class="empty-sub">Activity appears here in real time</div></div>';
-    document.getElementById('feed-ct').textContent=items.length+' events';
-  }
+// Live feed
+const feedEl=document.getElementById(‘dash-feed’);
+if(feedEl){
+const items=DB.feed.slice(0,15);
+feedEl.innerHTML=items.length?items.map(f=>` <div class="feed-item"> <div class="feed-ico" style="background:var(--s3)">${f.ico||'📍'}</div> <div class="feed-body"> <div class="feed-title">${esc(f.title||'')}</div> <div class="feed-sub">${esc(f.sub||'')}</div> <div class="feed-when">${ago(f.ts)}</div> </div> </div>`).join(’’) :
+‘<div class="empty-state" style="padding:24px"><div class="empty-ico">📡</div><div class="empty-sub">Activity appears here in real time</div></div>’;
+document.getElementById(‘feed-ct’).textContent=items.length+’ events’;
+}
 
-  // Upcoming appts
-  const now=new Date();
-  const up=[...DB.appts].filter(a=>{try{return new Date(a.date+'T'+(a.time||'00:00'))>=now;}catch(e){return false;}})
-    .sort((a,b)=>new Date(a.date+'T'+(a.time||'00:00'))-new Date(b.date+'T'+(b.time||'00:00'))).slice(0,4);
-  document.getElementById('dash-appts').innerHTML=up.length?up.map(a=>`
-    <div class="feed-item" style="padding:9px 16px">
-      <div class="feed-ico" style="background:var(--violet-g)">📅</div>
-      <div class="feed-body">
-        <div class="feed-title">${esc(a.cust||'—')}</div>
-        <div class="feed-sub">${timeStr(a.time)} · ${dateStr(a.date)} · ${esc(repName(a.rep))}</div>
-      </div>
-    </div>`).join('') :
-    '<div class="empty-state" style="padding:20px"><div class="empty-sub">No upcoming appointments</div></div>';
+// Upcoming appts
+const now=new Date();
+const up=[…DB.appts].filter(a=>{try{return new Date(a.date+‘T’+(a.time||‘00:00’))>=now;}catch(e){return false;}})
+.sort((a,b)=>new Date(a.date+‘T’+(a.time||‘00:00’))-new Date(b.date+‘T’+(b.time||‘00:00’))).slice(0,4);
+document.getElementById(‘dash-appts’).innerHTML=up.length?up.map(a=>` <div class="feed-item" style="padding:9px 16px"> <div class="feed-ico" style="background:var(--violet-g)">📅</div> <div class="feed-body"> <div class="feed-title">${esc(a.cust||'—')}</div> <div class="feed-sub">${timeStr(a.time)} · ${dateStr(a.date)} · ${esc(repName(a.rep))}</div> </div> </div>`).join(’’) :
+‘<div class="empty-state" style="padding:20px"><div class="empty-sub">No upcoming appointments</div></div>’;
 }
 
 function setKpi(id,val){
-  const el=document.getElementById(id); if(!el||el.textContent===val)return;
-  el.textContent=val;
-  const c=el.closest('.kpi');
-  if(c){c.classList.remove('kpi-flash');void c.offsetWidth;c.classList.add('kpi-flash');}
+const el=document.getElementById(id); if(!el||el.textContent===val)return;
+el.textContent=val;
+const c=el.closest(’.kpi’);
+if(c){c.classList.remove(‘kpi-flash’);void c.offsetWidth;c.classList.add(‘kpi-flash’);}
 }
 
 // ─── RENDER: LEADERBOARD ─────────────────────────────────────────
 function renderLeaderboard(){
-  const sortKey = document.getElementById('lb-sort')?.value||'revenue';
-  const stats = DB.reps.map(r=>{
-    const rid = r.alias||r.id;
-    const myPins = DB.pins.filter(p=>p.rep===rid);
-    const mySold = myPins.filter(p=>p.status==='sold');
-    const revenue= mySold.reduce((t,p)=>t+(+p.revenue||0),0);
-    const leads  = myPins.length;
-    const sold   = mySold.length;
-    const appts  = DB.appts.filter(a=>a.rep===rid).length;
-    const insts  = DB.installs.filter(i=>i.rep===rid).length;
-    const closePct = leads>0?(sold/leads*100):0;
-    const avg    = sold>0?Math.round(revenue/sold):0;
-    return{r,revenue,leads,sold,appts,insts,closePct,avg};
-  });
-  stats.sort((a,b)=>b[sortKey]-a[sortKey]);
+const sortKey = document.getElementById(‘lb-sort’)?.value||‘revenue’;
+const stats = DB.reps.map(r=>{
+const rid = r.alias||r.id;
+const myPins = DB.pins.filter(p=>p.rep===rid);
+const mySold = myPins.filter(p=>p.status===‘sold’);
+const revenue= mySold.reduce((t,p)=>t+(+p.revenue||0),0);
+const leads  = myPins.length;
+const sold   = mySold.length;
+const appts  = DB.appts.filter(a=>a.rep===rid).length;
+const insts  = DB.installs.filter(i=>i.rep===rid).length;
+const closePct = leads>0?(sold/leads*100):0;
+const avg    = sold>0?Math.round(revenue/sold):0;
+return{r,revenue,leads,sold,appts,insts,closePct,avg};
+});
+stats.sort((a,b)=>b[sortKey]-a[sortKey]);
 
-  // Team KPIs
-  const totRev  = stats.reduce((t,s)=>t+s.revenue,0);
-  const totSold = stats.reduce((t,s)=>t+s.sold,0);
-  const totLeads= stats.reduce((t,s)=>t+s.leads,0);
-  const teamRate= totLeads>0?(totSold/totLeads*100).toFixed(1):0;
-  document.getElementById('lb-kpis').innerHTML=`
-    <div class="kpi kpi-jade"><div class="kpi-lbl">Team Revenue</div><div class="kpi-val">$${(totRev/1000).toFixed(0)}K</div></div>
-    <div class="kpi kpi-violet"><div class="kpi-lbl">Total Sales</div><div class="kpi-val">${totSold}</div></div>
-    <div class="kpi kpi-blue"><div class="kpi-lbl">Team Leads</div><div class="kpi-val">${totLeads}</div></div>
-    <div class="kpi kpi-amber"><div class="kpi-lbl">Team Close Rate</div><div class="kpi-val">${teamRate}%</div></div>`;
+// Team KPIs
+const totRev  = stats.reduce((t,s)=>t+s.revenue,0);
+const totSold = stats.reduce((t,s)=>t+s.sold,0);
+const totLeads= stats.reduce((t,s)=>t+s.leads,0);
+const teamRate= totLeads>0?(totSold/totLeads*100).toFixed(1):0;
+document.getElementById(‘lb-kpis’).innerHTML=` <div class="kpi kpi-jade"><div class="kpi-lbl">Team Revenue</div><div class="kpi-val">$${(totRev/1000).toFixed(0)}K</div></div> <div class="kpi kpi-violet"><div class="kpi-lbl">Total Sales</div><div class="kpi-val">${totSold}</div></div> <div class="kpi kpi-blue"><div class="kpi-lbl">Team Leads</div><div class="kpi-val">${totLeads}</div></div> <div class="kpi kpi-amber"><div class="kpi-lbl">Team Close Rate</div><div class="kpi-val">${teamRate}%</div></div>`;
 
-  const medals=['🥇','🥈','🥉'];
-  const maxRev = Math.max(1,...stats.map(s=>s.revenue));
-  document.getElementById('lb-rows').innerHTML = stats.length ? stats.map((s,i)=>{
-    const col = s.r.color||'#3b82f6';
-    const isMe= s.r.alias===currentUser?.alias;
-    return `<div class="lb-row ${isMe?'me':''}">
-      <div class="lb-rank">${medals[i]||'#'+(i+1)}</div>
-      <div class="lb-av" style="background:${col}18;color:${col};border:1px solid ${col}33;width:36px;height:36px;border-radius:8px">${inits(s.r)}</div>
-      <div class="lb-info" style="flex:1">
-        <div class="lb-name">${esc(s.r.fname||'')} ${esc(s.r.lname||'')} ${isMe?'<span style="font-size:9px;background:var(--blue-g);color:var(--blue);padding:1px 6px;border-radius:4px;font-family:var(--mono)">YOU</span>':''}</div>
-        <div class="lb-role">${s.r.role||'Rep'} · ${s.r.areaId?(DB.areas.find(a=>a.id===s.r.areaId)?.name||'—'):'No Territory'}</div>
-        <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${Math.max(2,(s.revenue/maxRev)*100)}%;background:${col}"></div></div>
-      </div>
-      <div class="lb-stat"><div class="lb-stat-val" style="color:#34d399">$${(s.revenue/1000).toFixed(0)}K</div><div class="lb-stat-lbl">Revenue</div></div>
-      <div class="lb-stat"><div class="lb-stat-val">${s.sold}</div><div class="lb-stat-lbl">Sales</div></div>
-      <div class="lb-stat"><div class="lb-stat-val" style="color:#a78bfa">${s.closePct.toFixed(1)}%</div><div class="lb-stat-lbl">Close %</div></div>
-      <div class="lb-stat"><div class="lb-stat-val">${s.leads}</div><div class="lb-stat-lbl">Leads</div></div>
-      <div class="lb-stat"><div class="lb-stat-val" style="color:#60a5fa">${s.insts}</div><div class="lb-stat-lbl">Installs</div></div>
-    </div>`;
-  }).join('') : '<div class="empty-state"><div class="empty-ico">🏆</div><div class="empty-title">No reps yet</div><div class="empty-sub">Add team members to see the leaderboard</div></div>';
+const medals=[‘🥇’,‘🥈’,‘🥉’];
+const maxRev = Math.max(1,…stats.map(s=>s.revenue));
+document.getElementById(‘lb-rows’).innerHTML = stats.length ? stats.map((s,i)=>{
+const col = s.r.color||’#3b82f6’;
+const isMe= s.r.alias===currentUser?.alias;
+return `<div class="lb-row ${isMe?'me':''}"> <div class="lb-rank">${medals[i]||'#'+(i+1)}</div> <div class="lb-av" style="background:${col}18;color:${col};border:1px solid ${col}33;width:36px;height:36px;border-radius:8px">${inits(s.r)}</div> <div class="lb-info" style="flex:1"> <div class="lb-name">${esc(s.r.fname||'')} ${esc(s.r.lname||'')} ${isMe?'<span style="font-size:9px;background:var(--blue-g);color:var(--blue);padding:1px 6px;border-radius:4px;font-family:var(--mono)">YOU</span>':''}</div> <div class="lb-role">${s.r.role||'Rep'} · ${s.r.areaId?(DB.areas.find(a=>a.id===s.r.areaId)?.name||'—'):'No Territory'}</div> <div class="lb-bar-track"><div class="lb-bar-fill" style="width:${Math.max(2,(s.revenue/maxRev)*100)}%;background:${col}"></div></div> </div> <div class="lb-stat"><div class="lb-stat-val" style="color:#34d399">$${(s.revenue/1000).toFixed(0)}K</div><div class="lb-stat-lbl">Revenue</div></div> <div class="lb-stat"><div class="lb-stat-val">${s.sold}</div><div class="lb-stat-lbl">Sales</div></div> <div class="lb-stat"><div class="lb-stat-val" style="color:#a78bfa">${s.closePct.toFixed(1)}%</div><div class="lb-stat-lbl">Close %</div></div> <div class="lb-stat"><div class="lb-stat-val">${s.leads}</div><div class="lb-stat-lbl">Leads</div></div> <div class="lb-stat"><div class="lb-stat-val" style="color:#60a5fa">${s.insts}</div><div class="lb-stat-lbl">Installs</div></div> </div>`;
+}).join(’’) : ‘<div class="empty-state"><div class="empty-ico">🏆</div><div class="empty-title">No reps yet</div><div class="empty-sub">Add team members to see the leaderboard</div></div>’;
 }
 
 // ─── RENDER: APPOINTMENTS ─────────────────────────────────────────
 function renderAppts(){
-  const now=new Date();
-  const all=[...DB.appts].sort((a,b)=>new Date(a.date+'T'+(a.time||'00:00'))-new Date(b.date+'T'+(b.time||'00:00')));
-  const up=all.filter(a=>{try{return new Date(a.date+'T'+(a.time||'00:00'))>=now;}catch(e){return false;}});
-  const pa=all.filter(a=>{try{return new Date(a.date+'T'+(a.time||'00:00'))<now;}catch(e){return false;}}).reverse();
-  document.getElementById('appt-sub').textContent=`${up.length} upcoming · ${pa.length} past`;
-  const apptCard=list=>`<div style="padding:0">${list.length?list.map(a=>`
-    <div class="feed-item" style="padding:11px 16px">
-      <div class="feed-ico" style="background:var(--violet-g);font-size:13px">📅</div>
-      <div class="feed-body">
-        <div class="feed-title">${esc(a.cust||'—')}</div>
-        <div class="feed-sub">${timeStr(a.time)} · ${dateStr(a.date)} · ${TYPE_LABELS[a.type]||a.type||'Appt'}</div>
-        <div class="feed-when">${esc(a.addr||'')} · ${esc(repName(a.rep))}</div>
-        ${a.notes?`<div class="feed-when" style="margin-top:2px;color:var(--t2)">${esc(a.notes)}</div>`:''}
-      </div>
-    </div>`).join('') : '<div class="empty-state" style="padding:24px"><div class="empty-ico">📅</div><div class="empty-sub">None</div></div>'}</div>`;
-  document.getElementById('appts-upcoming').innerHTML=apptCard(up.slice(0,25));
-  document.getElementById('appts-past').innerHTML=apptCard(pa.slice(0,25));
+const now=new Date();
+const all=[…DB.appts].sort((a,b)=>new Date(a.date+‘T’+(a.time||‘00:00’))-new Date(b.date+‘T’+(b.time||‘00:00’)));
+const up=all.filter(a=>{try{return new Date(a.date+‘T’+(a.time||‘00:00’))>=now;}catch(e){return false;}});
+const pa=all.filter(a=>{try{return new Date(a.date+‘T’+(a.time||‘00:00’))<now;}catch(e){return false;}}).reverse();
+document.getElementById(‘appt-sub’).textContent=`${up.length} upcoming · ${pa.length} past`;
+const apptCard=list=>`<div style="padding:0">${list.length?list.map(a=>`
+<div class="feed-item" style="padding:11px 16px">
+<div class="feed-ico" style="background:var(--violet-g);font-size:13px">📅</div>
+<div class="feed-body">
+<div class="feed-title">${esc(a.cust||’—’)}</div>
+<div class="feed-sub">${timeStr(a.time)} · ${dateStr(a.date)} · ${TYPE_LABELS[a.type]||a.type||‘Appt’}</div>
+<div class="feed-when">${esc(a.addr||’’)} · ${esc(repName(a.rep))}</div>
+${a.notes?`<div class="feed-when" style="margin-top:2px;color:var(--t2)">${esc(a.notes)}</div>`:’’}
+</div>
+</div>`).join('') : '<div class="empty-state" style="padding:24px"><div class="empty-ico">📅</div><div class="empty-sub">None</div></div>'}</div>`;
+document.getElementById(‘appts-upcoming’).innerHTML=apptCard(up.slice(0,25));
+document.getElementById(‘appts-past’).innerHTML=apptCard(pa.slice(0,25));
 }
-const TYPE_LABELS={demo:'Demo',followup:'Follow-up',close:'Close',install:'Install Walkthrough'};
+const TYPE_LABELS={demo:‘Demo’,followup:‘Follow-up’,close:‘Close’,install:‘Install Walkthrough’};
 
 function saveAppt(){
-  const cust=document.getElementById('ac').value.trim();
-  const addr=document.getElementById('aa').value.trim();
-  const date=document.getElementById('ad').value;
-  const time=document.getElementById('at2').value;
-  if(!cust||!date){toast('Enter customer name and date','warn');return;}
-  const a={
-    id:IDs.appt++, cust, addr,
-    phone:document.getElementById('aph').value.trim(),
-    date, time,
-    type:document.getElementById('aty').value,
-    rep:document.getElementById('ar').value,
-    notes:document.getElementById('an').value.trim(),
-    createdAt:tsNow(), updatedAt:tsNow(),
-  };
-  DB.appts.push(a);
-  saveAll();
-  renderAppts();
-  renderDash();
-  closeModal('modal-appt');
-  addFeed('📅','Appointment set',`${cust} · ${dateStr(date)}`);
-  toast('Appointment scheduled','ok');
+const cust=document.getElementById(‘ac’).value.trim();
+const addr=document.getElementById(‘aa’).value.trim();
+const date=document.getElementById(‘ad’).value;
+const time=document.getElementById(‘at2’).value;
+if(!cust||!date){toast(‘Enter customer name and date’,‘warn’);return;}
+const a={
+id:IDs.appt++, cust, addr,
+phone:document.getElementById(‘aph’).value.trim(),
+date, time,
+type:document.getElementById(‘aty’).value,
+rep:document.getElementById(‘ar’).value,
+notes:document.getElementById(‘an’).value.trim(),
+createdAt:tsNow(), updatedAt:tsNow(),
+};
+DB.appts.push(a);
+saveAll();
+renderAppts();
+renderDash();
+closeModal(‘modal-appt’);
+addFeed(‘📅’,‘Appointment set’,`${cust} · ${dateStr(date)}`);
+toast(‘Appointment scheduled’,‘ok’);
 }
 
 // ─── RENDER: TEAM ─────────────────────────────────────────────────
 function renderTeam(){
-  document.getElementById('team-sub').textContent=`${DB.reps.length} team members`;
-  document.getElementById('team-grid').innerHTML=DB.reps.length?DB.reps.map(r=>{
-    const rid=r.alias||r.id;
-    const leads=DB.pins.filter(p=>p.rep===rid).length;
-    const sold=DB.pins.filter(p=>p.rep===rid&&p.status==='sold').length;
-    const rev=DB.pins.filter(p=>p.rep===rid&&p.status==='sold').reduce((t,p)=>t+(+p.revenue||0),0);
-    const col=r.color||'#3b82f6';
-    return `<div class="card">
-      <div style="height:3px;background:${col}"></div>
-      <div style="padding:16px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-          <div style="width:38px;height:38px;border-radius:10px;background:${col}18;color:${col};border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:14px">${inits(r)}</div>
-          <div>
-            <div style="font-weight:700;font-size:13px;color:var(--t0)">${esc(r.fname||'')} ${esc(r.lname||'')}</div>
-            <div style="font-size:9px;font-family:var(--mono);color:var(--t2);text-transform:uppercase;letter-spacing:.5px">${r.role||'Rep'} · ${r.areaId?(DB.areas.find(a=>a.id===r.areaId)?.name||'—'):'No Territory'}</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:var(--t0)">${leads}</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">LEADS</div></div>
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:#34d399">${sold}</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">SOLD</div></div>
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:#60a5fa">$${(rev/1000).toFixed(0)}K</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">REV</div></div>
-        </div>
-      </div>
-    </div>`;
-  }).join('') : '<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-ico">👥</div><div class="empty-title">No reps yet</div></div></div>';
+document.getElementById(‘team-sub’).textContent=`${DB.reps.length} team members`;
+document.getElementById(‘team-grid’).innerHTML=DB.reps.length?DB.reps.map(r=>{
+const rid=r.alias||r.id;
+const leads=DB.pins.filter(p=>p.rep===rid).length;
+const sold=DB.pins.filter(p=>p.rep===rid&&p.status===‘sold’).length;
+const rev=DB.pins.filter(p=>p.rep===rid&&p.status===‘sold’).reduce((t,p)=>t+(+p.revenue||0),0);
+const col=r.color||’#3b82f6’;
+return `<div class="card"> <div style="height:3px;background:${col}"></div> <div style="padding:16px"> <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"> <div style="width:38px;height:38px;border-radius:10px;background:${col}18;color:${col};border:1px solid ${col}33;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:14px">${inits(r)}</div> <div> <div style="font-weight:700;font-size:13px;color:var(--t0)">${esc(r.fname||'')} ${esc(r.lname||'')}</div> <div style="font-size:9px;font-family:var(--mono);color:var(--t2);text-transform:uppercase;letter-spacing:.5px">${r.role||'Rep'} · ${r.areaId?(DB.areas.find(a=>a.id===r.areaId)?.name||'—'):'No Territory'}</div> </div> </div> <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:var(--t0)">${leads}</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">LEADS</div></div> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:#34d399">${sold}</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">SOLD</div></div> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:16px;color:#60a5fa">$${(rev/1000).toFixed(0)}K</div><div style="font-size:8.5px;font-family:var(--mono);color:var(--t2)">REV</div></div> </div> </div> </div>`;
+}).join(’’) : ‘<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-ico">👥</div><div class="empty-title">No reps yet</div></div></div>’;
 }
 
 function saveRep(){
-  const fn=document.getElementById('rf').value.trim();
-  const ln=document.getElementById('rl').value.trim();
-  if(!fn){toast('Enter first name','warn');return;}
-  const r={
-    id:IDs.rep++,
-    alias:`${fn.toLowerCase()}.${ln.toLowerCase()}`.replace(/\s/g,''),
-    fname:fn,lname:ln,
-    role:document.getElementById('rr').value,
-    phone:document.getElementById('rp2').value.trim(),
-    areaId:document.getElementById('ra').value,
-    color:`hsl(${Math.round(Math.random()*360)},60%,55%)`,
-    createdAt:tsNow(),
-  };
-  DB.reps.push(r);
-  saveAll();
-  renderTeam();
-  populateRepSelects();
-  closeModal('modal-rep');
-  toast('Team member added','ok');
+const fn=document.getElementById(‘rf’).value.trim();
+const ln=document.getElementById(‘rl’).value.trim();
+if(!fn){toast(‘Enter first name’,‘warn’);return;}
+const r={
+id:IDs.rep++,
+alias:`${fn.toLowerCase()}.${ln.toLowerCase()}`.replace(/\s/g,’’),
+fname:fn,lname:ln,
+role:document.getElementById(‘rr’).value,
+phone:document.getElementById(‘rp2’).value.trim(),
+areaId:document.getElementById(‘ra’).value,
+color:`hsl(${Math.round(Math.random()*360)},60%,55%)`,
+createdAt:tsNow(),
+};
+DB.reps.push(r);
+saveAll();
+renderTeam();
+populateRepSelects();
+closeModal(‘modal-rep’);
+toast(‘Team member added’,‘ok’);
 }
 
 // ─── RENDER: TERRITORIES ─────────────────────────────────────────
 function renderTerritories(){
-  document.getElementById('territories-grid').innerHTML=DB.areas.length?DB.areas.map(a=>{
-    const pins=DB.pins.filter(p=>p.areaId===a.id);
-    const sold=pins.filter(p=>p.status==='sold');
-    const rev=sold.reduce((t,p)=>t+(+p.revenue||0),0);
-    const rate=pins.length>0?(sold.length/pins.length*100).toFixed(1):0;
-    const rep=DB.reps.find(r=>(r.alias||r.id)===a.repId||r.id===a.repId);
-    return `<div class="card">
-      <div style="height:3px;background:${a.color||'#3b82f6'}"></div>
-      <div style="padding:16px">
-        <div style="font-family:var(--head);font-size:14px;color:var(--t0);margin-bottom:3px">${esc(a.name)}</div>
-        <div style="font-size:10px;font-family:var(--mono);color:var(--t2);margin-bottom:12px">ZIP ${a.zip||'—'} · ${rep?esc(rep.fname+' '+rep.lname):'Unassigned'}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px">${pins.length}</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">DOORS</div></div>
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px;color:#34d399">${sold.length}</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">SOLD</div></div>
-          <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px;color:#a78bfa">${rate}%</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">RATE</div></div>
-        </div>
-        <div style="font-size:11px;font-family:var(--mono);color:#34d399;font-weight:600">Revenue: $${(rev/1000).toFixed(0)}K</div>
-        <div class="prog" style="margin-top:6px"><div class="prog-fill" style="width:${Math.min(100,+rate*4)}%;background:${a.color||'#3b82f6'}"></div></div>
-      </div>
-    </div>`;
-  }).join('') : '<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-ico">🗾</div><div class="empty-title">No territories yet</div></div></div>';
+document.getElementById(‘territories-grid’).innerHTML=DB.areas.length?DB.areas.map(a=>{
+const pins=DB.pins.filter(p=>p.areaId===a.id);
+const sold=pins.filter(p=>p.status===‘sold’);
+const rev=sold.reduce((t,p)=>t+(+p.revenue||0),0);
+const rate=pins.length>0?(sold.length/pins.length*100).toFixed(1):0;
+const rep=DB.reps.find(r=>(r.alias||r.id)===a.repId||r.id===a.repId);
+return `<div class="card"> <div style="height:3px;background:${a.color||'#3b82f6'}"></div> <div style="padding:16px"> <div style="font-family:var(--head);font-size:14px;color:var(--t0);margin-bottom:3px">${esc(a.name)}</div> <div style="font-size:10px;font-family:var(--mono);color:var(--t2);margin-bottom:12px">ZIP ${a.zip||'—'} · ${rep?esc(rep.fname+' '+rep.lname):'Unassigned'}</div> <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px"> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px">${pins.length}</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">DOORS</div></div> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px;color:#34d399">${sold.length}</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">SOLD</div></div> <div style="text-align:center;background:var(--s1);border-radius:7px;padding:8px"><div style="font-family:var(--head);font-size:15px;color:#a78bfa">${rate}%</div><div style="font-size:8px;font-family:var(--mono);color:var(--t2)">RATE</div></div> </div> <div style="font-size:11px;font-family:var(--mono);color:#34d399;font-weight:600">Revenue: $${(rev/1000).toFixed(0)}K</div> <div class="prog" style="margin-top:6px"><div class="prog-fill" style="width:${Math.min(100,+rate*4)}%;background:${a.color||'#3b82f6'}"></div></div> </div> </div>`;
+}).join(’’) : ‘<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-ico">🗾</div><div class="empty-title">No territories yet</div></div></div>’;
 }
 
 function saveArea(){
-  const n=document.getElementById('zn').value.trim();
-  if(!n){toast('Enter territory name','warn');return;}
-  const a={
-    id:'area_'+Date.now(),
-    name:n,zip:document.getElementById('zz').value.trim(),
-    repId:document.getElementById('zr').value,
-    notes:document.getElementById('zo').value.trim(),
-    color:`hsl(${Math.round(Math.random()*360)},55%,50%)`,
-    createdAt:tsNow(),
-  };
-  DB.areas.push(a);
-  saveAll();
-  renderTerritories();
-  populateRepSelects();
-  closeModal('modal-area');
-  toast('Territory created','ok');
+const n=document.getElementById(‘zn’).value.trim();
+if(!n){toast(‘Enter territory name’,‘warn’);return;}
+const a={
+id:‘area_’+Date.now(),
+name:n,zip:document.getElementById(‘zz’).value.trim(),
+repId:document.getElementById(‘zr’).value,
+notes:document.getElementById(‘zo’).value.trim(),
+color:`hsl(${Math.round(Math.random()*360)},55%,50%)`,
+createdAt:tsNow(),
+};
+DB.areas.push(a);
+saveAll();
+renderTerritories();
+populateRepSelects();
+closeModal(‘modal-area’);
+toast(‘Territory created’,‘ok’);
 }
 
 // Manual lead
 function saveManualLead(){
-  const fn=document.getElementById('ml-fn').value.trim();
-  const addr=document.getElementById('ml-addr').value.trim();
-  if(!addr){toast('Address required','warn');return;}
-  const id=IDs.pin++;
-  const pin={
-    id, lat:0, lng:0, addr,
-    fname:fn, lname:document.getElementById('ml-ln').value.trim(),
-    phone:document.getElementById('ml-ph').value.trim(),
-    email:document.getElementById('ml-em').value.trim(),
-    status:document.getElementById('ml-status').value,
-    rep:document.getElementById('ml-rep').value||currentUser?.alias||'',
-    areaId:'', revenue:0, product:'', installDate:'', installId:null,
-    history:[{action:'Lead added manually',status:document.getElementById('ml-status').value,
-              note:document.getElementById('ml-notes').value.trim(),ts:tsNow()}],
-    createdAt:tsNow(), updatedAt:tsNow(),
-  };
-  DB.pins.push(pin);
-  // Geocode in background
-  geocodeAddress(addr).then(coords=>{
-    if(coords){pin.lat=coords.lat;pin.lng=coords.lng;placeGMapPin(pin);saveAll(pin.id);updateMapStats();}
-  });
-  saveAll(pin.id);
-  renderLeads();
-  renderDash();
-  closeModal('modal-lead');
-  addFeed('📋','Lead added',addr);
-  toast('Lead added — geocoding address…','ok');
+const fn=document.getElementById(‘ml-fn’).value.trim();
+const addr=document.getElementById(‘ml-addr’).value.trim();
+if(!addr){toast(‘Address required’,‘warn’);return;}
+const id=IDs.pin++;
+const pin={
+id, lat:0, lng:0, addr,
+fname:fn, lname:document.getElementById(‘ml-ln’).value.trim(),
+phone:document.getElementById(‘ml-ph’).value.trim(),
+email:document.getElementById(‘ml-em’).value.trim(),
+status:document.getElementById(‘ml-status’).value,
+rep:document.getElementById(‘ml-rep’).value||currentUser?.alias||’’,
+areaId:’’, revenue:0, product:’’, installDate:’’, installId:null,
+history:[{action:‘Lead added manually’,status:document.getElementById(‘ml-status’).value,
+note:document.getElementById(‘ml-notes’).value.trim(),ts:tsNow()}],
+createdAt:tsNow(), updatedAt:tsNow(),
+};
+DB.pins.push(pin);
+// Geocode in background
+geocodeAddress(addr).then(coords=>{
+if(coords){pin.lat=coords.lat;pin.lng=coords.lng;placeGMapPin(pin);saveAll(pin.id);updateMapStats();}
+});
+saveAll(pin.id);
+renderLeads();
+renderDash();
+closeModal(‘modal-lead’);
+addFeed(‘📋’,‘Lead added’,addr);
+toast(‘Lead added — geocoding address…’,‘ok’);
 }
-</script>
 
-<script>
-// ─── AUTH SYSTEM ──────────────────────────────────────────────────
-let _gun, _gApp, _gUser;
+// ─── AUTH SYSTEM (no SEA — works on HTTP, file://, any host) ──────
+// Users stored in Gun as plain nodes: users/{alias} = {alias, passHash, profile}
+// Password hashed with djb2 + secret salt — no WebCrypto needed.
+
+const _LOCAL_USERS_KEY = ‘ch_users_v5’; // localStorage user registry
 
 function initGun(){
-  _gun   = Gun({peers:GUN_RELAYS, localStorage:false});
-  _gApp  = _gun.get(SYNC_NS);
-  _gUser = _gun.user();
+_gun  = Gun({peers:GUN_RELAYS, localStorage:false});
+_gApp = _gun.get(SYNC_NS);
+}
+
+/* ── Simple deterministic hash (no crypto dependency) ── */
+function hashPass(alias, pass){
+const str = ‘CH2025:’ + alias + ‘:’ + pass;
+let h = 5381;
+for(let i=0;i<str.length;i++) h = Math.imul(h,33)^str.charCodeAt(i);
+// Second pass for avalanche
+let h2 = 0x811c9dc5;
+for(let i=0;i<str.length;i++){ h2^=str.charCodeAt(i); h2=Math.imul(h2,0x01000193); }
+return (h>>>0).toString(16).padStart(8,‘0’)+(h2>>>0).toString(16).padStart(8,‘0’);
+}
+
+/* ── Local user registry (survives offline) ── */
+function getLocalUsers(){
+try{ return JSON.parse(localStorage.getItem(_LOCAL_USERS_KEY)||’{}’); }
+catch(e){ return {}; }
+}
+function saveLocalUser(alias, record){
+const u=getLocalUsers(); u[alias]=record;
+localStorage.setItem(_LOCAL_USERS_KEY, JSON.stringify(u));
+}
+
+/* ── Sync users to/from Gun so team members share accounts ── */
+function syncUsersFromGun(cb){
+const fetched={};let pending=0;
+_gApp.get(‘users’).map().once((data,key)=>{
+if(!data||!key) return;
+pending++;
+const local=getLocalUsers();
+if(!local[key]){ // new user from another device
+saveLocalUser(key,data);
+}
+pending–;
+if(pending===0 && cb) cb();
+});
+setTimeout(()=>{ if(cb) cb(); },2500); // timeout fallback
 }
 
 function switchTab(t){
-  document.getElementById('tab-login').style.display   = t==='login'?'block':'none';
-  document.getElementById('tab-register').style.display= t==='register'?'block':'none';
-  document.getElementById('tab-login-btn').className   = 'atab'+(t==='login'?' on':'');
-  document.getElementById('tab-reg-btn').className     = 'atab'+(t==='register'?' on':'');
+document.getElementById(‘tab-login’).style.display   = t===‘login’?‘block’:‘none’;
+document.getElementById(‘tab-register’).style.display= t===‘register’?‘block’:‘none’;
+document.getElementById(‘tab-login-btn’).className   = ‘atab’+(t===‘login’?’ on’:’’);
+document.getElementById(‘tab-reg-btn’).className     = ‘atab’+(t===‘register’?’ on’:’’);
 }
 
 function doLogin(){
-  const alias=gv('a-user').toLowerCase().replace(/\s/g,'');
-  const pass=gv('a-pass');
-  if(!alias||!pass){setErr('login-err','Enter username and password');return;}
-  setErr('login-err','Signing in…');
-  _gUser.auth(alias,pass,ack=>{
-    if(ack.err){setErr('login-err',ack.err==='Wrong user or password.'?'Invalid username or password.':ack.err);return;}
-    _gUser.get('profile').once(p=>{
-      currentUser={...(p||{}),alias,pub:_gUser.is?.pub||''};
-      if(!currentUser.role)currentUser.role='rep';
-      sessionStorage.setItem('ch_sess',JSON.stringify({alias}));
-      bootApp();
-    });
-  });
+const alias=gv(‘a-user’).toLowerCase().replace(/\s/g,’’);
+const pass=gv(‘a-pass’);
+if(!alias||!pass){setErr(‘login-err’,‘Enter username and password’);return;}
+setErr(‘login-err’,’’);
+// Check local registry first (works offline)
+const users=getLocalUsers();
+if(users[alias]){
+_verifyAndLogin(alias,pass,users[alias]);
+} else {
+// Try fetching from Gun (another device may have registered)
+setErr(‘login-err’,‘Looking up account…’);
+_gApp.get(‘users’).get(alias).once(data=>{
+if(data&&data.passHash){
+saveLocalUser(alias,data);
+_verifyAndLogin(alias,pass,data);
+} else {
+setErr(‘login-err’,‘Account not found — check username or create one’);
+}
+});
+setTimeout(()=>{
+if(document.getElementById(‘login-err’).textContent===‘Looking up account…’)
+setErr(‘login-err’,‘Account not found — check username or create one’);
+},4000);
+}
+}
+
+function _verifyAndLogin(alias,pass,record){
+if(record.passHash!==hashPass(alias,pass)){
+setErr(‘login-err’,‘Wrong password’);return;
+}
+currentUser={…record.profile,alias};
+if(!currentUser.role)currentUser.role=‘rep’;
+sessionStorage.setItem(‘ch_sess’,JSON.stringify({alias,passHash:record.passHash}));
+bootApp();
 }
 
 function doRegister(){
-  const fn=gv('r-fn'),ln=gv('r-ln');
-  const alias=gv('r-user').toLowerCase().replace(/\s/g,'');
-  const pass=gv('r-pass');
-  const role=document.getElementById('r-role').value;
-  const inv=gv('r-invite');
-  if(!fn||!alias||pass.length<8){setErr('reg-err','Fill all fields · Password min 8 chars');return;}
-  if((role==='manager'||role==='admin')&&inv!==ADMIN_CODE){setErr('reg-err','Invalid invite code for that role');return;}
-  setErr('reg-err','Creating account…');
-  _gUser.create(alias,pass,ack=>{
-    if(ack.err){setErr('reg-err',ack.err);return;}
-    _gUser.auth(alias,pass,ack2=>{
-      if(ack2.err){setErr('reg-err',ack2.err);return;}
-      const profile={alias,fname:fn,lname:ln,role,phone:'',color:`hsl(${Math.round(Math.random()*320+20)},60%,55%)`,createdAt:tsNow()};
-      _gUser.get('profile').put(profile);
-      // Add to team DB so others see this rep
-      const rep={...profile,id:IDs.rep++};
-      DB.reps.push(rep);
-      currentUser={...profile,pub:_gUser.is?.pub||''};
-      sessionStorage.setItem('ch_sess',JSON.stringify({alias}));
-      saveAll();
-      bootApp();
-    });
-  });
+const fn=gv(‘r-fn’),ln=gv(‘r-ln’);
+const alias=gv(‘r-user’).toLowerCase().replace(/[^a-z0-9.*]/g,’’);
+const pass=gv(‘r-pass’);
+const role=document.getElementById(‘r-role’).value;
+const inv=gv(‘r-invite’);
+if(!fn||!alias||pass.length<8){setErr(‘reg-err’,‘Fill all fields · Password min 8 chars’);return;}
+if(!alias.match(/^[a-z0-9.*]+$/)){setErr(‘reg-err’,‘Username: letters, numbers, . _ only’);return;}
+if((role===‘manager’||role===‘admin’)&&inv!==ADMIN_CODE){setErr(‘reg-err’,‘Invalid invite code for that role’);return;}
+const users=getLocalUsers();
+if(users[alias]){setErr(‘reg-err’,‘Username already taken’);return;}
+setErr(‘reg-err’,’’);
+const passHash=hashPass(alias,pass);
+const profile={alias,fname:fn,lname:ln,role,
+color:‘hsl(’+Math.round(Math.random()*320+20)+’,60%,55%)’,
+createdAt:tsNow()};
+const record={alias,passHash,profile};
+// Save locally + to Gun
+saveLocalUser(alias,record);
+_gApp.get(‘users’).get(alias).put(record);
+// Add to team roster
+const rep={…profile,id:IDs.rep++};
+DB.reps.push(rep);
+currentUser={…profile};
+sessionStorage.setItem(‘ch_sess’,JSON.stringify({alias,passHash}));
+saveAll();
+bootApp();
 }
 
 function tryRestoreSession(){
-  const saved=sessionStorage.getItem('ch_sess');
-  if(saved){
-    const {alias}=JSON.parse(saved);
-    _gUser.recall({sessionStorage:true},ack=>{
-      if(!ack.err&&_gUser.is){
-        _gUser.get('profile').once(p=>{
-          currentUser={...(p||{}),alias,pub:_gUser.is?.pub||''};
-          if(!currentUser.role)currentUser.role='rep';
-          bootApp();
-        });
-      } else { showAuth(); }
-    });
-  } else { showAuth(); }
+const saved=sessionStorage.getItem(‘ch_sess’);
+if(saved){
+try{
+const {alias,passHash}=JSON.parse(saved);
+const users=getLocalUsers();
+if(users[alias]&&users[alias].passHash===passHash){
+currentUser={…users[alias].profile,alias};
+if(!currentUser.role)currentUser.role=‘rep’;
+bootApp(); return;
+}
+}catch(e){}
+}
+showAuth();
 }
 
 function showAuth(){
-  document.getElementById('auth').style.display='flex';
-  document.getElementById('app').style.display='none';
+document.getElementById(‘auth’).style.display=‘flex’;
+document.getElementById(‘app’).style.display=‘none’;
 }
 function showLogout(){
-  if(confirm('Sign out?')){ _gUser.leave(); sessionStorage.removeItem('ch_sess'); currentUser=null; showAuth(); }
+if(confirm(‘Sign out?’)){
+sessionStorage.removeItem(‘ch_sess’);
+currentUser=null; showAuth();
+}
 }
 
-// ─── GUN.JS SYNC ENGINE ───────────────────────────────────────────
-let _syncReady=false;
-const _pinQ=new Map();
-let _uiTmr, _metaTmr;
-
 function startSync(){
-  // Subscribe: individual pins
-  _gApp.get('pins').map().on((raw,key)=>{
-    if(!raw||!raw.id) return;
-    _handlePin(raw);
-  });
-  // Subscribe: meta (installs, appts, reps, areas, feed, ids)
-  _gApp.get('meta').on(raw=>{
-    if(!raw) return;
-    _markLive();
-    try{
-      const tryArr=(v,fb)=>{const r=tryParse(v,fb);return Array.isArray(r)?r:fb;};
-      const m=typeof raw==='string'?JSON.parse(raw):raw;
-      if(m.installs) DB.installs=tryArr(m.installs,DB.installs);
-      if(m.appts)    DB.appts   =tryArr(m.appts,   DB.appts);
-      if(m.areas)    DB.areas   =tryArr(m.areas,   DB.areas);
-      if(m.feed)     DB.feed    =tryArr(m.feed,    DB.feed);
-      const reps=tryArr(m.reps,[]);
-      if(reps.length) DB.reps=reps;
-      const ids=tryParse(m.ids,null);
-      if(ids) Object.assign(IDs,ids);
-      renderAll();
-    }catch(e){console.error('[Sync]meta',e);}
-  });
-  // Safety: if no data in 6s, just boot clean
-  setTimeout(()=>{ if(!_syncReady){_markLive();renderAll();} },6000);
+// Subscribe: individual pins
+_gApp.get(‘pins’).map().on((raw,key)=>{
+if(!raw||!raw.id) return;
+_handlePin(raw);
+});
+// Subscribe: meta (installs, appts, reps, areas, feed, ids)
+_gApp.get(‘meta’).on(raw=>{
+if(!raw) return;
+_markLive();
+try{
+const tryArr=(v,fb)=>{const r=tryParse(v,fb);return Array.isArray(r)?r:fb;};
+const m=typeof raw===‘string’?JSON.parse(raw):raw;
+if(m.installs) DB.installs=tryArr(m.installs,DB.installs);
+if(m.appts)    DB.appts   =tryArr(m.appts,   DB.appts);
+if(m.areas)    DB.areas   =tryArr(m.areas,   DB.areas);
+if(m.feed)     DB.feed    =tryArr(m.feed,    DB.feed);
+const reps=tryArr(m.reps,[]);
+if(reps.length) DB.reps=reps;
+const ids=tryParse(m.ids,null);
+if(ids) Object.assign(IDs,ids);
+renderAll();
+}catch(e){console.error(’[Sync]meta’,e);}
+});
+// Safety: if no data in 6s, just boot clean
+setTimeout(()=>{ if(!_syncReady){_markLive();renderAll();} },6000);
 }
 
 function _handlePin(raw){
-  const pin={
-    id:+raw.id, status:raw.status||'nh',
-    fname:raw.fname||'', lname:raw.lname||'',
-    addr:raw.addr||'', phone:raw.phone||'', email:raw.email||'',
-    lat:+raw.lat||0, lng:+raw.lng||0,
-    rep:String(raw.rep||''), areaId:String(raw.areaId||''),
-    revenue:+raw.revenue||0, product:raw.product||'',
-    installDate:raw.installDate||'', installStatus:raw.installStatus||'',
-    installId:raw.installId||null,
-    updatedAt:raw.updatedAt||'', createdAt:raw.createdAt||'',
-    history:tryParse(raw.histJson,[]),
-  };
-  const ex=DB.pins.find(p=>p.id===pin.id);
-  if(ex){
-    if(pin.updatedAt>(ex.updatedAt||'')){
-      Object.assign(ex,pin);
-      _pinQ.set(pin.id,'updated');
-      if(activePin===pin.id) renderDrawer(ex);
-    }
-  } else {
-    DB.pins.push(pin);
-    if(IDs.pin<=pin.id) IDs.pin=pin.id+1;
-    _pinQ.set(pin.id,'new');
-  }
-  clearTimeout(_uiTmr);
-  _uiTmr=setTimeout(()=>{
-    _markLive();
-    const newIds=[],updIds=[];
-    _pinQ.forEach((t,id)=>{ t==='new'?newIds.push(id):updIds.push(id); });
-    _pinQ.clear();
-    newIds.forEach(id=>{const p=DB.pins.find(x=>x.id===id);if(p&&!gMarkers[id])placeGMapPin(p);});
-    updIds.forEach(id=>{const p=DB.pins.find(x=>x.id===id);if(p)updatePinOnMap(p);});
-    updateMapStats();
-    renderAll();
-    if(newIds.length||updIds.length){
-      document.getElementById('sync-ts').textContent='↑ '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      toast(`☁ ${newIds.length?newIds.length+' new':''} ${updIds.length?updIds.length+' updated':''}`.trim(),'info');
-    }
-  },150);
+const pin={
+id:+raw.id, status:raw.status||‘nh’,
+fname:raw.fname||’’, lname:raw.lname||’’,
+addr:raw.addr||’’, phone:raw.phone||’’, email:raw.email||’’,
+lat:+raw.lat||0, lng:+raw.lng||0,
+rep:String(raw.rep||’’), areaId:String(raw.areaId||’’),
+revenue:+raw.revenue||0, product:raw.product||’’,
+installDate:raw.installDate||’’, installStatus:raw.installStatus||’’,
+installId:raw.installId||null,
+updatedAt:raw.updatedAt||’’, createdAt:raw.createdAt||’’,
+history:tryParse(raw.histJson,[]),
+};
+const ex=DB.pins.find(p=>p.id===pin.id);
+if(ex){
+if(pin.updatedAt>(ex.updatedAt||’’)){
+Object.assign(ex,pin);
+_pinQ.set(pin.id,‘updated’);
+if(activePin===pin.id) renderDrawer(ex);
+}
+} else {
+DB.pins.push(pin);
+if(IDs.pin<=pin.id) IDs.pin=pin.id+1;
+_pinQ.set(pin.id,‘new’);
+}
+clearTimeout(_uiTmr);
+_uiTmr=setTimeout(()=>{
+_markLive();
+const newIds=[],updIds=[];
+_pinQ.forEach((t,id)=>{ t===‘new’?newIds.push(id):updIds.push(id); });
+_pinQ.clear();
+newIds.forEach(id=>{const p=DB.pins.find(x=>x.id===id);if(p&&!gMarkers[id])placeGMapPin(p);});
+updIds.forEach(id=>{const p=DB.pins.find(x=>x.id===id);if(p)updatePinOnMap(p);});
+updateMapStats();
+renderAll();
+if(newIds.length||updIds.length){
+document.getElementById(‘sync-ts’).textContent=’↑ ’+new Date().toLocaleTimeString(‘en-US’,{hour:‘2-digit’,minute:‘2-digit’,second:‘2-digit’});
+toast(`☁ ${newIds.length?newIds.length+' new':''} ${updIds.length?updIds.length+' updated':''}`.trim(),‘info’);
+}
+},150);
 }
 
 function _markLive(){
-  if(_syncReady) return;
-  _syncReady=true;
-  document.getElementById('conn-dot').className='conn-dot live';
-  document.getElementById('conn-lbl').textContent='Live Sync';
-  toast('☁ Connected — live sync active','ok');
+if(_syncReady) return;
+_syncReady=true;
+document.getElementById(‘conn-dot’).className=‘conn-dot live’;
+document.getElementById(‘conn-lbl’).textContent=‘Live Sync’;
+toast(‘☁ Connected — live sync active’,‘ok’);
 }
 
 function _pushPin(pin){
-  if(!_gApp) return;
-  _gApp.get('pins').get(String(pin.id)).put({
-    id:pin.id, status:pin.status||'nh',
-    fname:pin.fname||'', lname:pin.lname||'',
-    addr:pin.addr||'', phone:pin.phone||'', email:pin.email||'',
-    lat:+pin.lat||0, lng:+pin.lng||0,
-    rep:String(pin.rep||''), areaId:String(pin.areaId||''),
-    revenue:+pin.revenue||0, product:pin.product||'',
-    installDate:pin.installDate||'', installStatus:pin.installStatus||'',
-    installId:pin.installId||null,
-    updatedAt:pin.updatedAt||tsNow(), createdAt:pin.createdAt||tsNow(),
-    histJson:JSON.stringify((pin.history||[]).slice(0,40)),
-  });
+if(!_gApp) return;
+_gApp.get(‘pins’).get(String(pin.id)).put({
+id:pin.id, status:pin.status||‘nh’,
+fname:pin.fname||’’, lname:pin.lname||’’,
+addr:pin.addr||’’, phone:pin.phone||’’, email:pin.email||’’,
+lat:+pin.lat||0, lng:+pin.lng||0,
+rep:String(pin.rep||’’), areaId:String(pin.areaId||’’),
+revenue:+pin.revenue||0, product:pin.product||’’,
+installDate:pin.installDate||’’, installStatus:pin.installStatus||’’,
+installId:pin.installId||null,
+updatedAt:pin.updatedAt||tsNow(), createdAt:pin.createdAt||tsNow(),
+histJson:JSON.stringify((pin.history||[]).slice(0,40)),
+});
 }
 
 function _pushMeta(){
-  if(!_gApp) return;
-  clearTimeout(_metaTmr);
-  _metaTmr=setTimeout(()=>{
-    _gApp.get('meta').put(JSON.stringify({
-      installs: JSON.stringify(DB.installs),
-      appts:    JSON.stringify(DB.appts),
-      areas:    JSON.stringify(DB.areas),
-      reps:     JSON.stringify(DB.reps),
-      feed:     JSON.stringify(DB.feed.slice(0,80)),
-      ids:      JSON.stringify(IDs),
-    }));
-  },400);
+if(!_gApp) return;
+clearTimeout(_metaTmr);
+_metaTmr=setTimeout(()=>{
+_gApp.get(‘meta’).put(JSON.stringify({
+installs: JSON.stringify(DB.installs),
+appts:    JSON.stringify(DB.appts),
+areas:    JSON.stringify(DB.areas),
+reps:     JSON.stringify(DB.reps),
+feed:     JSON.stringify(DB.feed.slice(0,80)),
+ids:      JSON.stringify(IDs),
+}));
+},400);
 }
 
 // ─── SAVE / LOAD ──────────────────────────────────────────────────
 function saveAll(pinId){
-  // localStorage
-  try{
-    localStorage.setItem(SK, JSON.stringify({
-      pins:DB.pins, installs:DB.installs, appts:DB.appts,
-      areas:DB.areas, reps:DB.reps, feed:DB.feed, ids:IDs
-    }));
-  }catch(e){console.warn('localStorage full',e);}
-  // Gun.js sync
-  if(pinId!==undefined){
-    const pin=DB.pins.find(p=>p.id===pinId);
-    if(pin) _pushPin(pin);
-  }
-  _pushMeta();
+// localStorage
+try{
+localStorage.setItem(SK, JSON.stringify({
+pins:DB.pins, installs:DB.installs, appts:DB.appts,
+areas:DB.areas, reps:DB.reps, feed:DB.feed, ids:IDs
+}));
+}catch(e){console.warn(‘localStorage full’,e);}
+// Gun.js sync
+if(pinId!==undefined){
+const pin=DB.pins.find(p=>p.id===pinId);
+if(pin) _pushPin(pin);
+}
+_pushMeta();
 }
 
 function loadAll(){
-  try{
-    const raw=localStorage.getItem(SK);
-    if(raw){
-      const s=JSON.parse(raw);
-      if(s.pins)     DB.pins     =s.pins;
-      if(s.installs) DB.installs =s.installs;
-      if(s.appts)    DB.appts    =s.appts;
-      if(s.areas)    DB.areas    =s.areas;
-      if(s.reps&&s.reps.length) DB.reps=s.reps;
-      if(s.feed)     DB.feed     =s.feed;
-      if(s.ids)      Object.assign(IDs,s.ids);
-    }
-  }catch(e){console.warn('loadAll error',e);}
+try{
+const raw=localStorage.getItem(SK);
+if(raw){
+const s=JSON.parse(raw);
+if(s.pins)     DB.pins     =s.pins;
+if(s.installs) DB.installs =s.installs;
+if(s.appts)    DB.appts    =s.appts;
+if(s.areas)    DB.areas    =s.areas;
+if(s.reps&&s.reps.length) DB.reps=s.reps;
+if(s.feed)     DB.feed     =s.feed;
+if(s.ids)      Object.assign(IDs,s.ids);
+}
+}catch(e){console.warn(‘loadAll error’,e);}
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────
 function bootApp(){
-  document.getElementById('auth').style.display='none';
-  document.getElementById('app').style.display='block';
-  // Update nav user display
-  document.getElementById('nav-uname').textContent=currentUser?.fname||currentUser?.alias||'User';
-  document.getElementById('nav-urole').textContent=(currentUser?.role||'rep').toUpperCase();
-  document.getElementById('nav-av').textContent=((currentUser?.fname||'?')[0]+(currentUser?.lname||'')[0]).toUpperCase()||'?';
-  loadAll();
-  populateRepSelects();
-  renderAll();
-  startSync();
-  loadMapsAPI();
-  startOutageMonitor();
-  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById(‘auth’).style.display=‘none’;
+document.getElementById(‘app’).style.display=‘block’;
+// Update nav user display
+document.getElementById(‘nav-uname’).textContent=currentUser?.fname||currentUser?.alias||‘User’;
+document.getElementById(‘nav-urole’).textContent=(currentUser?.role||‘rep’).toUpperCase();
+document.getElementById(‘nav-av’).textContent=((currentUser?.fname||’?’)[0]+(currentUser?.lname||’’)[0]).toUpperCase()||’?’;
+loadAll();
+populateRepSelects();
+renderAll();
+startSync();
+loadMapsAPI();
+startOutageMonitor();
+document.getElementById(‘dash-date’).textContent=new Date().toLocaleDateString(‘en-US’,{weekday:‘long’,year:‘numeric’,month:‘long’,day:‘numeric’});
 }
 
 function loadMapsAPI(){
-  if(window.google&&window.google.maps){initMap();return;}
-  const s=document.createElement('script');
-  s.src=`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=marker,places,geometry&callback=initMap&loading=async`;
-  s.async=true;s.defer=true;
-  document.head.appendChild(s);
+if(window.google&&window.google.maps){initMap();return;}
+const s=document.createElement(‘script’);
+s.src=`https://maps.googleapis.com/maps/api/js?key=${MAPS_KEY}&libraries=marker,places,geometry&callback=initMap&loading=async`;
+s.async=true;s.defer=true;
+document.head.appendChild(s);
 }
 
 function renderAll(){
-  renderDash();
-  renderLeads();
-  renderInstalls();
-  renderLeaderboard();
-  renderAppts();
-  renderTeam();
-  renderTerritories();
-  populateRepSelects();
+renderDash();
+renderLeads();
+renderInstalls();
+renderLeaderboard();
+renderAppts();
+renderTeam();
+renderTerritories();
+populateRepSelects();
 }
 
 // ─── OUTAGE MONITORING ────────────────────────────────────────────
 function startOutageMonitor(){
-  window.addEventListener('online', ()=>{
-    hideOutage();
-    toast('✓ Internet restored — syncing','ok');
-    _pushMeta();
-  });
-  window.addEventListener('offline', ()=>{
-    showOutage('📡','No internet — working offline · All data saved locally','#1e3a5f');
-  });
-  // Poll weather alerts every 5 min
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      checkWeather(pos.coords.latitude,pos.coords.longitude);
-      setInterval(()=>checkWeather(pos.coords.latitude,pos.coords.longitude), 5*60*1000);
-    },()=>{});
-  }
+window.addEventListener(‘online’, ()=>{
+hideOutage();
+toast(‘✓ Internet restored — syncing’,‘ok’);
+_pushMeta();
+});
+window.addEventListener(‘offline’, ()=>{
+showOutage(‘📡’,‘No internet — working offline · All data saved locally’,’#1e3a5f’);
+});
+// Poll weather alerts every 5 min
+if(navigator.geolocation){
+navigator.geolocation.getCurrentPosition(pos=>{
+checkWeather(pos.coords.latitude,pos.coords.longitude);
+setInterval(()=>checkWeather(pos.coords.latitude,pos.coords.longitude), 5*60*1000);
+},()=>{});
+}
 }
 
-function showOutage(ico, msg, bg='#1e3a5f'){
-  const bar=document.getElementById('outage-bar');
-  bar.style.background=bg; bar.style.color='#fff';
-  document.getElementById('outage-ico').textContent=ico;
-  document.getElementById('outage-msg').textContent=msg;
-  bar.classList.add('show');
-  document.documentElement.style.setProperty('--nh','80px');
+function showOutage(ico, msg, bg=’#1e3a5f’){
+const bar=document.getElementById(‘outage-bar’);
+bar.style.background=bg; bar.style.color=’#fff’;
+document.getElementById(‘outage-ico’).textContent=ico;
+document.getElementById(‘outage-msg’).textContent=msg;
+bar.classList.add(‘show’);
+document.documentElement.style.setProperty(’–nh’,‘80px’);
 }
 function hideOutage(){
-  document.getElementById('outage-bar').classList.remove('show');
-  document.documentElement.style.setProperty('--nh','52px');
+document.getElementById(‘outage-bar’).classList.remove(‘show’);
+document.documentElement.style.setProperty(’–nh’,‘52px’);
 }
 
 async function checkWeather(lat,lng){
-  try{
-    const res=await fetch(`https://api.weather.gov/alerts/active?point=${lat.toFixed(4)},${lng.toFixed(4)}`,{signal:AbortSignal.timeout(4000)});
-    if(!res.ok) return;
-    const data=await res.json();
-    const severe=['Severe Thunderstorm Warning','Tornado Warning','Flash Flood Warning','High Wind Warning','Extreme Wind Warning'];
-    const alerts=(data.features||[]).filter(f=>severe.includes(f.properties?.event));
-    if(alerts.length){
-      const evt=alerts[0].properties.event;
-      showOutage('⚡',`${evt} in your area — use caution while canvassing`,'#7c2d12');
-    }
-  }catch(e){}
+try{
+const res=await fetch(`https://api.weather.gov/alerts/active?point=${lat.toFixed(4)},${lng.toFixed(4)}`,{signal:AbortSignal.timeout(4000)});
+if(!res.ok) return;
+const data=await res.json();
+const severe=[‘Severe Thunderstorm Warning’,‘Tornado Warning’,‘Flash Flood Warning’,‘High Wind Warning’,‘Extreme Wind Warning’];
+const alerts=(data.features||[]).filter(f=>severe.includes(f.properties?.event));
+if(alerts.length){
+const evt=alerts[0].properties.event;
+showOutage(‘⚡’,`${evt} in your area — use caution while canvassing`,’#7c2d12’);
+}
+}catch(e){}
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────
 function nav(view, btn){
-  document.querySelectorAll('.view,.view-full').forEach(v=>v.classList.remove('on'));
-  const el=document.getElementById('v-'+view);
-  if(el) el.classList.add('on');
-  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  else document.querySelectorAll('.ntab').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+view+"'"))b.classList.add('on');});
+document.querySelectorAll(’.view,.view-full’).forEach(v=>v.classList.remove(‘on’));
+const el=document.getElementById(‘v-’+view);
+if(el) el.classList.add(‘on’);
+document.querySelectorAll(’.ntab’).forEach(b=>b.classList.remove(‘on’));
+if(btn) btn.classList.add(‘on’);
+else document.querySelectorAll(’.ntab’).forEach(b=>{if(b.getAttribute(‘onclick’)?.includes(”’”+view+”’”))b.classList.add(‘on’);});
 }
 
-function openModal(id){ document.getElementById(id)?.classList.add('open'); }
-function closeModal(id){ document.getElementById(id)?.classList.remove('open'); }
+function openModal(id){ document.getElementById(id)?.classList.add(‘open’); }
+function closeModal(id){ document.getElementById(id)?.classList.remove(‘open’); }
 
 function populateRepSelects(){
-  const opts=`<option value="">— Select Rep —</option>`+DB.reps.map(r=>`<option value="${r.alias||r.id}">${esc(r.fname+' '+r.lname)}</option>`).join('');
-  ['ml-rep','csv-rep','csv-rep2','ar','rf','zr'].forEach(id=>{
-    const el=document.getElementById(id); if(!el) return;
-    const cur=el.value;
-    if(id==='rf'){ el.innerHTML=`<option value="">No Territory</option>`+DB.areas.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join(''); }
-    else if(id==='zr'){ el.innerHTML=`<option value="">Unassigned</option>`+DB.reps.map(r=>`<option value="${r.alias||r.id}">${esc(r.fname+' '+r.lname)}</option>`).join(''); }
-    else { el.innerHTML=opts; }
-    if(cur) el.value=cur;
-  });
+const opts=`<option value="">— Select Rep —</option>`+DB.reps.map(r=>`<option value="${r.alias||r.id}">${esc(r.fname+' '+r.lname)}</option>`).join(’’);
+[‘ml-rep’,‘csv-rep’,‘csv-rep2’,‘ar’,‘rf’,‘zr’].forEach(id=>{
+const el=document.getElementById(id); if(!el) return;
+const cur=el.value;
+if(id===‘rf’){ el.innerHTML=`<option value="">No Territory</option>`+DB.areas.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join(’’); }
+else if(id===‘zr’){ el.innerHTML=`<option value="">Unassigned</option>`+DB.reps.map(r=>`<option value="${r.alias||r.id}">${esc(r.fname+' '+r.lname)}</option>`).join(’’); }
+else { el.innerHTML=opts; }
+if(cur) el.value=cur;
+});
 }
 
 function addFeed(ico,title,sub){
-  DB.feed.unshift({ico,title,sub,ts:tsNow()});
-  DB.feed=DB.feed.slice(0,120);
+DB.feed.unshift({ico,title,sub,ts:tsNow()});
+DB.feed=DB.feed.slice(0,120);
 }
 
 function repName(id){
-  const r=DB.reps.find(r=>(r.alias||r.id)===id||r.id===id||r.alias===id);
-  return r?`${r.fname||''} ${r.lname||''}`.trim():'—';
+const r=DB.reps.find(r=>(r.alias||r.id)===id||r.id===id||r.alias===id);
+return r?`${r.fname||''} ${r.lname||''}`.trim():’—’;
 }
-function inits(r){return(((r.fname||'')[0]||'')+((r.lname||'')[0]||'')).toUpperCase()||'?';}
+function inits(r){return(((r.fname||’’)[0]||’’)+((r.lname||’’)[0]||’’)).toUpperCase()||’?’;}
 
 function tsNow(){return new Date().toISOString();}
 function ago(ts){
-  if(!ts)return'';
-  const d=(Date.now()-new Date(ts))/1000;
-  if(d<60)return'just now';
-  if(d<3600)return Math.floor(d/60)+'m ago';
-  if(d<86400)return Math.floor(d/3600)+'h ago';
-  return Math.floor(d/86400)+'d ago';
+if(!ts)return’’;
+const d=(Date.now()-new Date(ts))/1000;
+if(d<60)return’just now’;
+if(d<3600)return Math.floor(d/60)+‘m ago’;
+if(d<86400)return Math.floor(d/3600)+‘h ago’;
+return Math.floor(d/86400)+‘d ago’;
 }
 function dateStr(d){
-  try{return d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}catch(e){return d||'—';}
+try{return d?new Date(d+‘T12:00:00’).toLocaleDateString(‘en-US’,{month:‘short’,day:‘numeric’,year:‘numeric’}):’—’;}catch(e){return d||’—’;}
 }
 function timeStr(t){
-  if(!t)return'';
-  const[h,m]=t.split(':');const hr=+h;
-  return`${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;
+if(!t)return’’;
+const[h,m]=t.split(’:’);const hr=+h;
+return`${hr%12||12}:${m} ${hr<12?'AM':'PM'}`;
 }
-function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
-function gv(id){return(document.getElementById(id)?.value||'').trim();}
+function esc(s){const d=document.createElement(‘div’);d.textContent=String(s||’’);return d.innerHTML;}
+function gv(id){return(document.getElementById(id)?.value||’’).trim();}
 function setErr(id,msg){const e=document.getElementById(id);if(e)e.textContent=msg;}
-function tryParse(s,fb){try{return typeof s==='string'?JSON.parse(s):s;}catch(e){return fb;}}
+function tryParse(s,fb){try{return typeof s===‘string’?JSON.parse(s):s;}catch(e){return fb;}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 // Progress modal
 function showProgress(msg){
-  document.getElementById('prog-label').textContent=msg;
-  document.getElementById('prog-bar').style.width='0%';
-  document.getElementById('prog-status').textContent='';
-  document.getElementById('progress-modal').classList.add('show');
+document.getElementById(‘prog-label’).textContent=msg;
+document.getElementById(‘prog-bar’).style.width=‘0%’;
+document.getElementById(‘prog-status’).textContent=’’;
+document.getElementById(‘progress-modal’).classList.add(‘show’);
 }
 function setProgress(pct,msg){
-  document.getElementById('prog-bar').style.width=pct+'%';
-  document.getElementById('prog-status').textContent=msg;
+document.getElementById(‘prog-bar’).style.width=pct+’%’;
+document.getElementById(‘prog-status’).textContent=msg;
 }
-function hideProgress(){document.getElementById('progress-modal').classList.remove('show');}
+function hideProgress(){document.getElementById(‘progress-modal’).classList.remove(‘show’);}
 
 // Toasts
-function toast(msg,type='info'){
-  const t=document.createElement('div');
-  t.className='toast '+type;t.textContent=msg;
-  const tc=document.getElementById('toasts');
-  if(tc){tc.prepend(t);setTimeout(()=>t.remove(),4200);}
+function toast(msg,type=‘info’){
+const t=document.createElement(‘div’);
+t.className=’toast ’+type;t.textContent=msg;
+const tc=document.getElementById(‘toasts’);
+if(tc){tc.prepend(t);setTimeout(()=>t.remove(),4200);}
 }
 
 // Close modals on backdrop click
-document.querySelectorAll('.modal-bg').forEach(bg=>{
-  bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');});
+document.querySelectorAll(’.modal-bg’).forEach(bg=>{
+bg.addEventListener(‘click’,e=>{if(e.target===bg)bg.classList.remove(‘open’);});
 });
 
 // Keyboard shortcuts
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));
-    closeDrawer();
-  }
+document.addEventListener(‘keydown’,e=>{
+if(e.key===‘Escape’){
+document.querySelectorAll(’.modal-bg.open’).forEach(m=>m.classList.remove(‘open’));
+closeDrawer();
+}
 });
 
 // ─── BOOT SEQUENCE ────────────────────────────────────────────────
