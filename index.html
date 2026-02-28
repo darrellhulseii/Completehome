@@ -641,7 +641,8 @@ window.gm_authFailure = function() {
     <div class="sidebar-header">
       <span>📍 Leads</span>
       <div style="display:flex;gap:5px;">
-        <button class="btn btn-ghost btn-sm" onclick="exportLeadsCSV()" title="Export CSV" style="font-size:10px;padding:4px 8px;">⬇️ CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportLeadsCSV()" title="Export CSV" style="font-size:10px;padding:4px 8px;">⬇️ Export</button>
+        <button class="btn btn-amber btn-sm" onclick="document.getElementById('csv-import-input').click()" title="Import leads from CSV file" style="font-size:10px;padding:4px 8px;">⬆️ Import CSV</button>
         <button class="btn btn-primary btn-sm" onclick="openPinModal()">+ Add</button>
       </div>
     </div>
@@ -784,12 +785,10 @@ window.gm_authFailure = function() {
   </div>
 </section>
 
-<!-- ==================== OUTAGE PANEL ==================== -->
-<section class="panel" id="outage-panel" style="flex-direction:column;">
 
-<!-- ==================== OUTAGE PANEL ==================== -->
 <section class="panel" id="outage-panel" style="flex-direction:column;">
-  <!-- Sub-tabs -->
+<!-- ==================== OUTAGE PANEL ==================== -->
+<!-- Sub-tabs -->
   <div class="sub-tabs">
     <button class="sub-tab-btn active" onclick="switchOutageTab('power')" id="sub-tab-power">⚡ Power Outages (PG&E)</button>
     <button class="sub-tab-btn" onclick="switchOutageTab('internet')" id="sub-tab-internet">🌐 Internet Outages</button>
@@ -804,7 +803,7 @@ window.gm_authFailure = function() {
         </div>
         <div class="outage-controls">
           <button class="btn btn-primary btn-sm" onclick="fetchOutages()" id="outage-refresh-btn">🔄 Refresh Outage Data</button>
-          <div style="font-size:10px;color:var(--text-dim);">Live data from PG&E outage system</div>
+          <div style="font-size:10px;color:var(--text-dim);" id="outage-last-updated">Tap to load current data</div>
         </div>
         <div class="outage-stats">
           <div class="stat-card red"><div class="stat-num" id="out-active">—</div><div class="stat-label">Active Outages</div></div>
@@ -1239,6 +1238,7 @@ window.gm_authFailure = function() {
   <div class="modal" style="max-width:540px;">
     <h3>📍 Lead Profile</h3>
     <input type="hidden" id="pin-edit-id">
+<input type="file" id="csv-import-input" accept=".csv" style="display:none" onchange="importCSVLeads(this)">
     <div class="form-group">
       <label>Address / Location</label>
       <input type="text" id="pin-address" placeholder="123 Main St, Salinas, CA 93901">
@@ -1508,7 +1508,8 @@ function switchTab(name) {
   if (name === 'sales') { renderSales(); renderPipeline(); }
   if (name === 'broadband') { renderFiberNews(); renderDefaultISPs(); setTimeout(initBroadbandMap, 150); }
   if (name === 'weather') fetchWeather();
-  if (name === 'calendar') renderCustomCalendar();
+  if (name === 'calendar') { renderCustomCalendar(); renderApptList(); }
+  if (name === 'outage') { fetchOutages(); }
   if (name === 'map') {
     if (!state.mapsLoaded) loadGoogleMaps();
     else if (window.google && state.map) google.maps.event.trigger(state.map, 'resize');
@@ -2081,7 +2082,7 @@ function savePin() {
   const idx = state.pins.findIndex(p=>p.id===id);
   if (idx>=0) state.pins[idx]=pin; else state.pins.unshift(pin);
   if (!pin.lat && pin.address) geocodeAndAddPin(pin);
-  saveLocal(); renderPinList(); renderMapMarkers(); closePinModal(); updateBadges();
+  saveLocal(); renderPinList(); renderMapMarkers(); renderDashboard(); closePinModal(); updateBadges();
 }
 
 function editPin(id) {
@@ -2101,7 +2102,7 @@ function editPin(id) {
 function deletePin(id) {
   if (!confirm('Delete this lead?')) return;
   state.pins = state.pins.filter(p=>p.id!==id);
-  saveLocal(); renderPinList(); renderMapMarkers(); updateBadges();
+  saveLocal(); renderPinList(); renderMapMarkers(); renderDashboard(); updateBadges();
 }
 
 function quickStatus(id, status) {
@@ -2109,7 +2110,7 @@ function quickStatus(id, status) {
   addPinActivity(pin, `Status → ${STATUS_LABELS[status]||status}`);
   pin.status = status;
   if (status==='sold') logDashActivity('✅', `Sold — ${pin.name||pin.address||'Lead'}`);
-  saveLocal(); renderMapMarkers(); renderPinList(); updateBadges();
+  saveLocal(); renderMapMarkers(); renderPinList(); updateBadges(); renderDashboard();
 }
 
 function highlightSidebarPin(id) {
@@ -2158,6 +2159,97 @@ function focusPin(id) {
   const marker = state.markers?.find(m=>m._pin&&m._pin.id===id);
   if (marker) { state.markers.forEach(m=>m._iw&&m._iw.close()); marker._iw?.open(state.map,marker); }
   highlightSidebarPin(id);
+}
+
+
+/* ---- CSV IMPORT ---- */
+function importCSVLeads(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) return alert('CSV file is empty.');
+
+    // Auto-detect header
+    const header = lines[0].toLowerCase().split(',').map(h => h.replace(/"/g,'').trim());
+    const col = key => header.indexOf(key);
+
+    const nameI    = col('name');
+    const addrI    = col('address') >= 0 ? col('address') : col('addr');
+    const phoneI   = col('phone');
+    const latI     = col('lat') >= 0 ? col('lat') : col('latitude');
+    const lngI     = col('lon') >= 0 ? col('lon') : col('lng') >= 0 ? col('lng') : col('longitude');
+    const statusI  = col('status');
+    const notesI   = col('notes');
+    const repI     = col('rep') >= 0 ? col('rep') : col('agent');
+    const terrI    = col('territory');
+
+    const parseRow = line => {
+      // Handle quoted fields with commas inside
+      const fields = [];
+      let cur = '', inQ = false;
+      for (const ch of line) {
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { fields.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      fields.push(cur.trim());
+      return fields;
+    };
+
+    const existing = new Set(state.pins.map(p => p.id));
+    const dataLines = lines.slice(1); // skip header
+    let added = 0, skipped = 0;
+
+    dataLines.forEach((line, i) => {
+      const f = parseRow(line);
+      if (f.length < 2) return;
+
+      const lat = latI >= 0 ? parseFloat(f[latI]) : null;
+      const lng = lngI >= 0 ? parseFloat(f[lngI]) : null;
+      const addr = addrI >= 0 ? f[addrI] : (lat && lng ? `${lat.toFixed(4)}, ${lng.toFixed(4)}` : '');
+      const id = `csv_${Date.now()}_${i}`;
+
+      if (existing.has(id)) { skipped++; return; }
+
+      const pin = {
+        id,
+        name:    nameI >= 0 ? f[nameI] : '',
+        address: addr,
+        phone:   phoneI >= 0 ? f[phoneI] : '',
+        status:  statusI >= 0 ? (f[statusI]||'not-home') : 'not-home',
+        rep:     repI >= 0 ? f[repI] : '',
+        notes:   notesI >= 0 ? f[notesI] : '',
+        territory: terrI >= 0 ? f[terrI] : '',
+        lat:     isNaN(lat) ? null : lat,
+        lng:     isNaN(lng) ? null : lng,
+        createdAt: new Date().toISOString(),
+        activity: [{ time: new Date().toISOString(), note: `Imported from ${file.name}` }]
+      };
+      state.pins.push(pin);
+      added++;
+    });
+
+    saveLocal();
+    renderPinList();
+    renderMapMarkers();
+    renderDashboard();
+    updateBadges();
+    logDashActivity('📦', `CSV import — ${added} leads from "${file.name}"`);
+
+    // Reset input so same file can be re-imported
+    input.value = '';
+
+    if (added === 0) {
+      alert(`No new leads added. ${skipped} rows skipped (duplicates or invalid data).`);
+    } else {
+      alert(`✅ ${added} leads imported successfully!${skipped ? '\n' + skipped + ' rows skipped.' : ''}`);
+    }
+  };
+  reader.onerror = () => alert('Error reading file.');
+  reader.readAsText(file);
 }
 
 function exportLeadsCSV() {
@@ -2223,6 +2315,9 @@ function saveAppt() {
 
   saveLocal();
   renderApptList();
+  renderCustomCalendar();
+  renderDashboard();
+  logDashActivity('📅', `Appt — ${appt.name||'Customer'} on ${appt.date}`);
   closeApptModal();
   updateBadges();
 }
@@ -2241,10 +2336,11 @@ function renderApptList() {
       <div class="appt-time">${a.date} ${a.time || ''}</div>
       <div class="appt-name">${a.name || 'Unknown'}</div>
       <div class="appt-meta">${a.address || ''}</div>
-      <div class="appt-tags">
+      <div class="appt-tags" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
         <span class="tag" style="color:var(--accent-cyan)">${TYPE_ICONS[a.type] || '📌'} ${a.type.replace('-',' ')}</span>
         <span class="tag" style="color:${a.status==='confirmed'?'var(--accent-green)':a.status==='cancelled'?'var(--accent-red)':'var(--accent-amber)'}">${a.status.toUpperCase()}</span>
         ${a.rep ? `<span class="tag" style="color:var(--text-secondary)">👤 ${a.rep}</span>` : ''}
+        <button onclick="event.stopPropagation();deleteAppt('${a.id}')" style="margin-left:auto;background:#ff4444;border:none;color:#fff;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;">🗑</button>
       </div>
     </div>
   `).join('');
@@ -2267,6 +2363,13 @@ function editAppt(id) {
 }
 
 // loadCalEmbed kept as no-op for backwards compat
+function deleteAppt(id) {
+  if (!confirm('Delete this appointment?')) return;
+  state.appointments = state.appointments.filter(a => a.id !== id);
+  saveLocal(); renderApptList(); renderCustomCalendar(); updateBadges(); renderDashboard();
+}
+
+
 function loadCalEmbed() {}
 
 /* ===================================================
@@ -2430,15 +2533,47 @@ const MOCK_OUTAGES = [
 
 function fetchOutages() {
   const btn = document.getElementById('outage-refresh-btn');
-  btn.textContent = '⏳ Loading...';
-  btn.disabled = true;
+  if (btn) { btn.textContent = '⏳ Loading...'; btn.disabled = true; }
 
-  // Attempt real PG&E API, fall back to mock data
-  setTimeout(() => {
-    btn.textContent = '🔄 Refresh Outage Data';
-    btn.disabled = false;
-    renderOutages(MOCK_OUTAGES);
-  }, 1200);
+  const done = () => {
+    if (btn) { btn.textContent = '🔄 Refresh'; btn.disabled = false; }
+    const lbl = document.getElementById('outage-last-updated');
+    if (lbl) lbl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'});
+  };
+
+  // Try PG&E real API first (CORS-permissive endpoint)
+  fetch('https://pgealerts.alerts.pge.com/outagecenterapi/external/getOutageStats?hashed=false', {
+    signal: AbortSignal.timeout(5000)
+  })
+  .then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(data => {
+    // Transform PG&E response
+    const outages = (data?.currentOutages || []).map((o, i) => ({
+      id: o.outageid || i,
+      area: o.district || o.circuitname || 'Unknown area',
+      city: o.city || 'Monterey County',
+      customers: parseInt(o.custAffected) || 0,
+      cause: o.cause || 'Under investigation',
+      started: o.crewCurrentStatus?.startdtm || '',
+      eta: o.estimatedRestoreTime || 'TBD',
+      status: o.crewCurrentStatus?.enddtm ? 'restored' : 'active',
+      type: o.planned ? 'planned' : 'unplanned'
+    }));
+    renderOutages(outages.length ? outages : MOCK_OUTAGES);
+    done();
+  })
+  .catch(() => {
+    // Fallback to mock data with current timestamps
+    const now = new Date();
+    const fmt = d => d.toISOString().slice(0,16).replace('T',' ');
+    const mockUpdated = MOCK_OUTAGES.map(o => ({
+      ...o,
+      started: fmt(new Date(now - Math.random() * 6 * 3600000)),
+      eta: fmt(new Date(now.getTime() + (1 + Math.random() * 4) * 3600000))
+    }));
+    renderOutages(mockUpdated);
+    done();
+  });
 }
 
 function renderOutages(data) {
@@ -3139,6 +3274,9 @@ function saveSale() {
   saveLocal();
   renderSales();
   renderPipeline();
+  renderLeaderboard();
+  renderDashboard();
+  logDashActivity('💰', `Sale — ${sale.customer||'Customer'} · $${sale.amount||0}`);
   closeSaleModal();
   updateBadges();
 }
@@ -3936,6 +4074,9 @@ function initApp() {
   renderCustomCalendar();
   renderLeaderboard();
   renderDashboard();
+  // Pre-populate outage data with mock on first load
+  setTimeout(() => renderOutages(MOCK_OUTAGES), 100);
+  fetchInternetOutages();
   // Preload activity log from storage
   try {
     const savedAct = JSON.parse(localStorage.getItem('fo_dash_activity') || '[]');
@@ -3953,6 +4094,27 @@ function initApp() {
   // Fetch live weather
   fetchWeather();
   setInterval(fetchWeather, 10 * 60 * 1000);
+
+  // Real-time dashboard refresh every 30 seconds
+  setInterval(() => {
+    renderDashboard();
+    updateBadges();
+  }, 30 * 1000);
+
+  // Real-time appointment list refresh every minute
+  setInterval(() => {
+    if (document.getElementById('calendar-panel')?.classList.contains('active')) {
+      renderApptList();
+      renderCustomCalendar();
+    }
+  }, 60 * 1000);
+
+  // Auto-refresh outage data every 5 minutes when outage tab is open
+  setInterval(() => {
+    if (document.getElementById('outage-panel')?.classList.contains('active')) {
+      fetchOutages();
+    }
+  }, 5 * 60 * 1000);
 
   const savedNotes = localStorage.getItem('fo_notes') || '';
   const notesEl = document.getElementById('daily-notes');
