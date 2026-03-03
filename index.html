@@ -272,6 +272,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <a href="#weather-sec" onclick="event.preventDefault();scrollToSec('weather-sec')">🌤 Weather</a>  
 <a href="#broadband-section" onclick="event.preventDefault();scrollToSec('broadband-section')">📡 ISPs</a>  
 <a href="#fiber-news-sec" onclick="event.preventDefault();scrollToSec('fiber-news-sec')">📰 News</a>  
+<a href="#cancel-guide-sec" onclick="event.preventDefault();scrollToSec('cancel-guide-sec')">🚫 Cancel Guide</a>
 <a href="#cloud-sec" onclick="event.preventDefault();scrollToSec('cloud-sec')">☁️ Sync</a>  
 <a href="#lb-sec" onclick="event.preventDefault();scrollToSec('lb-sec')">🏆 Board</a>
 
@@ -3348,6 +3349,470 @@ document.addEventListener('DOMContentLoaded', initApp);
     <span style="font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace;">AT&amp;T · EarthLink · Frontier · Spectrum · Local</span>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;" id="fiber-news-grid"></div>
-</section>  
+</section>
+
+<hr class="div">
+
+<!-- ═══ ISP CANCELLATION GUIDE ═══════════════════════════════════════ -->
+
+<section id="cancel-guide-sec" class="sec" style="padding-bottom:80px;">
+  <div class="sec-label">— FIELD REFERENCE</div>
+  <div class="sec-head">
+    <span style="font-size:22px;font-weight:900;">🚫 ISP Cancellation Guide</span>
+    <span style="font-size:11px;color:var(--t3);font-family:'IBM Plex Mono',monospace;">Use when switching customers to Frontier</span>
+  </div>
+  <div style="font-size:12px;color:var(--t2);margin-bottom:20px;padding:12px 16px;background:rgba(255,179,0,0.07);border:1px solid rgba(255,179,0,0.2);border-radius:10px;line-height:1.8;">
+    ⚡ <strong style="color:var(--amber);">Sales tip:</strong> Knowing the competitor's cancellation process — especially their fees and hold times — helps you frame the switch conversation. Many customers don't realize they can cancel without ETFs once their contract ends, or that Frontier can time the install to minimize billing overlap.
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;" id="cancel-cards-grid">
+
+```
+<!-- ── AT&T ───────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(0,168,224,0.3);">
+  <div class="card-title" style="color:#00a8e0;">
+    <span>📡 AT&amp;T Internet — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(0,168,224,0.15);padding:2px 8px;border-radius:8px;color:#00a8e0;">No-Contract Friendly</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(0,168,224,0.05);border-radius:8px;border-left:3px solid #00a8e0;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#4ade80;">$0</span> — AT&amp;T Fiber has no contracts or ETFs. Month-to-month only.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,168,224,0.2);color:#00a8e0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-800-288-2020</strong> (AT&amp;T Retention). Say "Cancel internet service" at the prompt. Expect a <strong style="color:var(--amber);">15–30 min hold.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,168,224,0.2);color:#00a8e0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Retention agents will offer discounts — stay firm, say "I've already signed with a new provider."</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,168,224,0.2);color:#00a8e0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Request a <strong style="color:var(--t1);">cancellation confirmation number</strong> and written confirmation email.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,168,224,0.2);color:#00a8e0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Return the <strong style="color:var(--t1);">BGW320/BGW210 gateway</strong> within <strong style="color:var(--amber);">21 days</strong> via UPS/FedEx using AT&amp;T's prepaid label, or face a <strong style="color:#f87171;">$150 unreturned equipment fee.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,168,224,0.2);color:#00a8e0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Service ends at the close of your billing cycle. Bill one more month if canceled mid-cycle — AT&amp;T does <strong style="color:#f87171;">not prorate.</strong></span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--t3);">
+      💡 <strong style="color:var(--t2);">Alt:</strong> Can also cancel online at att.com/myatt or via AT&amp;T app → Account → Manage Plan. Online cancellation may not be available for all accounts.
+    </div>
+  </div>
+</div>
+
+<!-- ── Xfinity / Comcast ──────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(211,0,0,0.3);">
+  <div class="card-title" style="color:#d30000;">
+    <span>📡 Xfinity / Comcast — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(211,0,0,0.15);padding:2px 8px;border-radius:8px;color:#d30000;">Most Difficult</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(211,0,0,0.05);border-radius:8px;border-left:3px solid #d30000;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#f87171;">Up to $110</span> if under a 1- or 2-year contract. Month-to-month plans have <span style="color:#4ade80;">no ETF.</span> Check contract status first.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Check contract: log into <strong style="color:var(--t1);">xfinity.com/myaccount</strong> → Service Details → Contract End Date.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-800-934-6489</strong>. Press 2 for "Manage Service" then say "Cancel." Hold times <strong style="color:var(--amber);">30–60+ min.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);"><strong style="color:#f87171;">Xfinity has aggressive retention.</strong> Agents may disconnect and call back, or offer large discounts. Repeat: "I want to cancel. Please process my cancellation."</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);"><strong style="color:#4ade80;">Easier path:</strong> Visit an <strong style="color:var(--t1);">Xfinity Store</strong> in person — staff can cancel on the spot. Bring ID and account number.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Return modem/router to an Xfinity store or ship via prepaid label within <strong style="color:var(--amber);">10 days.</strong> Unreturned equipment: <strong style="color:#f87171;">$110–$230 per device.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(211,0,0,0.2);color:#d30000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">6</span>
+        <span style="font-size:12px;color:var(--t2);">Xfinity <strong style="color:#f87171;">does not prorate.</strong> Pay through end of billing month. Watch for phantom charges — check final bill carefully.</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--t3);">
+      💡 <strong style="color:var(--t2);">Pro tip for customers:</strong> The Xfinity Now app also has a cancel flow under Account → Manage Service, but it often pushes "pause" instead of true cancellation. Always verify you received a cancellation email.
+    </div>
+  </div>
+</div>
+
+<!-- ── Spectrum ────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(0,51,160,0.3);">
+  <div class="card-title" style="color:#4488ff;">
+    <span>📡 Spectrum — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(0,51,160,0.15);padding:2px 8px;border-radius:8px;color:#4488ff;">No-Contract</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(0,51,160,0.07);border-radius:8px;border-left:3px solid #4488ff;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#4ade80;">$0</span> — Spectrum is 100% no-contract. Cancel any time, no ETF.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,51,160,0.2);color:#4488ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-833-267-6094</strong> (Spectrum Cancellation Line) or the main line 1-855-707-7328. Best time: weekday mornings.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,51,160,0.2);color:#4488ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">State "Cancel my internet service" — agents will route to retention. <strong style="color:var(--amber);">Expect 20–45 min hold + retention offers.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,51,160,0.2);color:#4488ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Get a <strong style="color:var(--t1);">cancellation confirmation number.</strong> Spectrum does not send email confirmations by default — ask for it.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,51,160,0.2);color:#4488ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Return modem/router within <strong style="color:var(--amber);">15 days</strong> to a Spectrum store or via prepaid UPS label. Unreturned: <strong style="color:#f87171;">up to $200 per device.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,51,160,0.2);color:#4488ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Service cuts off immediately or at billing cycle end — confirm which applies. Spectrum <strong style="color:#f87171;">does not prorate</strong> partial months.</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--t3);">
+      💡 <strong style="color:var(--t2);">Note:</strong> If customer owns their modem (purchased separately), no return needed. Only Spectrum-leased equipment must be returned.
+    </div>
+  </div>
+</div>
+
+<!-- ── EarthLink ───────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(143,188,0,0.3);">
+  <div class="card-title" style="color:#8fbc00;">
+    <span>📡 EarthLink Fiber — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(143,188,0,0.15);padding:2px 8px;border-radius:8px;color:#8fbc00;">Price-Lock Contract</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(143,188,0,0.05);border-radius:8px;border-left:3px solid #8fbc00;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#f87171;">Up to $200</span> if on a 1- or 2-year price-lock plan. Month-to-month has <span style="color:#4ade80;">no ETF.</span> EarthLink fiber uses AT&amp;T's network so ETF policy may mirror AT&amp;T's.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(143,188,0,0.2);color:#8fbc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-866-383-3080</strong> (EarthLink Customer Service). Hours: Mon–Fri 9am–9pm ET, Sat 9am–6pm ET.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(143,188,0,0.2);color:#8fbc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Verify your contract end date before calling. If within a price-lock period, ask about ETF waiver options — moving, service issues, or competitor match.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(143,188,0,0.2);color:#8fbc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Request confirmation via email. EarthLink sends a cancellation reference number — store it.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(143,188,0,0.2);color:#8fbc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Return any EarthLink-provided equipment (router/ONT) within <strong style="color:var(--amber);">30 days.</strong> Non-return fee: <strong style="color:#f87171;">$99–$149 per device.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(143,188,0,0.2);color:#8fbc00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Billing stops at end of current billing period. EarthLink may prorate — confirm during the call.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── T-Mobile Home Internet ──────────────────────────────────── -->
+<div class="card" style="border-color:rgba(226,0,116,0.3);">
+  <div class="card-title" style="color:#e20074;">
+    <span>📡 T-Mobile Home Internet — Cancel</span>
+    <span style="font-size:9px;background:rgba(226,0,116,0.15);padding:2px 8px;border-radius:8px;color:#e20074;">Easiest Cancel</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(226,0,116,0.05);border-radius:8px;border-left:3px solid #e20074;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#4ade80;">$0</span> — No contracts, no ETFs. Month-to-month only. One of the easiest ISPs to cancel.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(226,0,116,0.2);color:#e20074;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);"><strong style="color:#4ade80;">Easiest:</strong> Cancel via the <strong style="color:var(--t1);">T-Mobile app</strong> → Account → Home Internet → Cancel Service. Takes 5 minutes.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(226,0,116,0.2);color:#e20074;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Or call <strong style="color:var(--t1);">1-844-275-9310</strong> (Home Internet support) or dial 611 from a T-Mobile phone. Low hold times.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(226,0,116,0.2);color:#e20074;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Return the <strong style="color:var(--t1);">Nokia/Arcadyan gateway</strong> within <strong style="color:var(--amber);">30 days</strong> using the prepaid return kit T-Mobile emails you.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(226,0,116,0.2);color:#e20074;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Unreturned gateway fee: <strong style="color:#f87171;">$370.</strong> Return kit is free and pre-labeled — no excuses to miss it.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(226,0,116,0.2);color:#e20074;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">T-Mobile <strong style="color:#4ade80;">does prorate</strong> — you'll only be billed for days used. Final bill reflects exact usage.</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--t3);">
+      💡 <strong style="color:var(--t2);">Sales angle:</strong> T-Mobile customers are low-hanging fruit — easy to leave, no financial penalty. Lead with Frontier's reliability advantage over 5G fixed wireless.
+    </div>
+  </div>
+</div>
+
+<!-- ── Sonic ──────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(255,107,0,0.3);">
+  <div class="card-title" style="color:#ff6b00;">
+    <span>📡 Sonic — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(255,107,0,0.15);padding:2px 8px;border-radius:8px;color:#ff6b00;">No-Contract</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(255,107,0,0.05);border-radius:8px;border-left:3px solid #ff6b00;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#4ade80;">$0</span> — Sonic is month-to-month with no contracts.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(255,107,0,0.2);color:#ff6b00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-888-766-4233</strong> or email <strong style="color:var(--t1);">support@sonic.com.</strong> Sonic is known for fast, friendly support — typical hold &lt;10 min.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(255,107,0,0.2);color:#ff6b00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Or submit online at <strong style="color:var(--t1);">sonic.com/support</strong> → Disconnect Service form. Confirmation arrives by email within 1 business day.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(255,107,0,0.2);color:#ff6b00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Return any Sonic-provided equipment (router). Sonic typically allows customers to keep equipment or will arrange pickup in covered areas. Confirm during cancellation.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(255,107,0,0.2);color:#ff6b00;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Service ends at billing cycle close. Sonic <strong style="color:#4ade80;">prorates</strong> in some cases — ask specifically if canceling mid-cycle.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Starlink ────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(136,136,136,0.3);">
+  <div class="card-title" style="color:#aaa;">
+    <span>📡 Starlink — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(136,136,136,0.15);padding:2px 8px;border-radius:8px;color:#aaa;">Hardware Cost Risk</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(136,136,136,0.07);border-radius:8px;border-left:3px solid #888;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#4ade80;">$0</span> service ETF. However, hardware kit costs <strong style="color:#fbbf24;">$299–$599</strong> upfront. Hardware is <strong style="color:#f87171;">non-refundable after 30 days.</strong>
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(136,136,136,0.2);color:#aaa;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Log into <strong style="color:var(--t1);">account.starlink.com</strong> → Service → Manage Service → Pause or Cancel. Entirely self-serve — no phone number needed.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(136,136,136,0.2);color:#aaa;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Starlink offers a <strong style="color:var(--t1);">Pause option ($10/mo)</strong> instead of cancel — saves the hardware investment if the customer might return.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(136,136,136,0.2);color:#aaa;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">Hardware (dish, router, cables) is owned by the customer — <strong style="color:#4ade80;">no return required.</strong> Customer can sell it, keep it, or use on another property.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(136,136,136,0.2);color:#aaa;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">If within 30-day trial: contact support at <strong style="color:var(--t1);">support.starlink.com</strong> for full hardware refund. After 30 days: no hardware refund.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(136,136,136,0.2);color:#aaa;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Billing stops at end of current month. Starlink does <strong style="color:#f87171;">not prorate.</strong></span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(0,0,0,0.2);border-radius:8px;font-size:11px;color:var(--t3);">
+      💡 <strong style="color:var(--t2);">Sales angle:</strong> Customers paid $299–$599 for hardware they now own. Emphasize Frontier's <strong style="color:var(--t1);">$0 equipment cost</strong> and included router as a long-term savings comparison.
+    </div>
+  </div>
+</div>
+
+<!-- ── Viasat ──────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(0,91,153,0.3);">
+  <div class="card-title" style="color:#5ab4ff;">
+    <span>📡 Viasat — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(0,91,153,0.15);padding:2px 8px;border-radius:8px;color:#f87171;">High ETF Risk</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(0,91,153,0.07);border-radius:8px;border-left:3px solid #f87171;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#f87171;">Up to $500</span> — Viasat uses 2-year contracts. ETF = $15/mo × remaining months (max $500). Most costly ETF of any ISP on this list.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,91,153,0.2);color:#5ab4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);"><strong style="color:#f87171;">Check contract dates first</strong> at viasat.com → My Account. ETFs are calculated from remaining months × $15.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,91,153,0.2);color:#5ab4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-855-463-9333</strong>. Viasat hold times are typically <strong style="color:var(--amber);">45–90 minutes.</strong> Call early morning for fastest service.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,91,153,0.2);color:#5ab4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">ETF waivers available for: <strong style="color:#4ade80;">verified address move</strong> (outside Viasat coverage), documented <strong style="color:#4ade80;">service outages &gt;30 days,</strong> or military deployment.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,91,153,0.2);color:#5ab4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">Schedule a technician to retrieve the <strong style="color:var(--t1);">satellite dish and modem</strong> — Viasat-owned equipment. <strong style="color:#f87171;">Do not attempt to remove the dish yourself.</strong> Unreturned equipment: <strong style="color:#f87171;">$300+ fee.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(0,91,153,0.2);color:#5ab4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">Viasat does <strong style="color:#f87171;">not prorate.</strong> Bill through end of current cycle plus any ETF on final invoice.</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(255,0,0,0.07);border-radius:8px;border:1px solid rgba(248,113,113,0.2);font-size:11px;color:var(--t2);">
+      ⚠️ <strong style="color:#f87171;">High-ETF Warning:</strong> A customer 12 months into a 24-month contract owes <strong>$180 ETF</strong>. Factor this into the switching conversation — Frontier may offer bill credits to offset.
+    </div>
+  </div>
+</div>
+
+<!-- ── HughesNet ────────────────────────────────────────────────── -->
+<div class="card" style="border-color:rgba(245,168,0,0.3);">
+  <div class="card-title" style="color:#f5a800;">
+    <span>📡 HughesNet — Cancel Process</span>
+    <span style="font-size:9px;background:rgba(245,168,0,0.15);padding:2px 8px;border-radius:8px;color:#f87171;">2-Year Contract</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:11px;color:var(--t2);padding:8px 10px;background:rgba(245,168,0,0.05);border-radius:8px;border-left:3px solid #f5a800;">
+      <strong style="color:var(--t1);">Early Termination Fee:</strong> <span style="color:#f87171;">$400 flat</span> if canceled in year 1. <span style="color:#fbbf24;">$200 flat</span> if canceled in year 2. No ETF after 24 months.
+    </div>
+    <div style="font-size:12px;color:var(--t1);font-weight:700;margin-bottom:2px;">Step-by-Step Cancellation</div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(245,168,0,0.2);color:#f5a800;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">1</span>
+        <span style="font-size:12px;color:var(--t2);">Call <strong style="color:var(--t1);">1-866-347-3292</strong>. Available 24/7. Confirm contract end date before initiating cancellation.</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(245,168,0,0.2);color:#f5a800;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">2</span>
+        <span style="font-size:12px;color:var(--t2);">ETF waivers available for: <strong style="color:#4ade80;">military deployment</strong> (SCRA), <strong style="color:#4ade80;">documented address move</strong> outside coverage, or <strong style="color:#4ade80;">extended service outages.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(245,168,0,0.2);color:#f5a800;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">3</span>
+        <span style="font-size:12px;color:var(--t2);">HughesNet will send a <strong style="color:var(--t1);">return shipping kit</strong> for the modem/satellite transceiver. Must be returned within <strong style="color:var(--amber);">45 days.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(245,168,0,0.2);color:#f5a800;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">4</span>
+        <span style="font-size:12px;color:var(--t2);">The satellite dish on the roof is <strong style="color:var(--t1);">owned by the customer</strong> after installation — not returned. Modem/transceiver must be shipped back. Unreturned modem fee: <strong style="color:#f87171;">$300.</strong></span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <span style="min-width:20px;height:20px;background:rgba(245,168,0,0.2);color:#f5a800;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0;">5</span>
+        <span style="font-size:12px;color:var(--t2);">HughesNet does <strong style="color:#f87171;">not prorate.</strong> Charged through end of billing cycle.</span>
+      </div>
+    </div>
+    <div style="margin-top:4px;padding:8px 10px;background:rgba(255,0,0,0.07);border-radius:8px;border:1px solid rgba(248,113,113,0.2);font-size:11px;color:var(--t2);">
+      ⚠️ <strong style="color:#f87171;">Year 1 ETF is $400</strong> — often the biggest objection. Confirm customer contract year before quoting switch. If in month 13+, ETF drops to $200.
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- ── Quick-Reference Fee Table ──────────────────────────────── -->
+
+  <div style="margin-top:24px;">
+    <div style="font-size:14px;font-weight:900;color:var(--t1);margin-bottom:12px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;">📊 Fee Quick-Reference</div>
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:rgba(0,212,255,0.07);border-bottom:1px solid var(--border);">
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Provider</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Contract</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">ETF</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Equip Return</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Prorates?</th>
+            <th style="padding:10px 14px;text-align:left;color:var(--cyan);font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Cancel #</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 14px;color:#00a8e0;font-weight:700;">AT&amp;T Fiber</td>
+            <td style="padding:10px 14px;color:#4ade80;">None</td>
+            <td style="padding:10px 14px;color:#4ade80;">$0</td>
+            <td style="padding:10px 14px;color:var(--t2);">21 days — $150 fee</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-800-288-2020</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+            <td style="padding:10px 14px;color:#d30000;font-weight:700;">Xfinity</td>
+            <td style="padding:10px 14px;color:#fbbf24;">Optional 1–2 yr</td>
+            <td style="padding:10px 14px;color:#fbbf24;">Up to $110</td>
+            <td style="padding:10px 14px;color:var(--t2);">10 days — $110–$230</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-800-934-6489</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 14px;color:#4488ff;font-weight:700;">Spectrum</td>
+            <td style="padding:10px 14px;color:#4ade80;">None</td>
+            <td style="padding:10px 14px;color:#4ade80;">$0</td>
+            <td style="padding:10px 14px;color:var(--t2);">15 days — up to $200</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-833-267-6094</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+            <td style="padding:10px 14px;color:#8fbc00;font-weight:700;">EarthLink</td>
+            <td style="padding:10px 14px;color:#fbbf24;">Optional 1–2 yr</td>
+            <td style="padding:10px 14px;color:#fbbf24;">Up to $200</td>
+            <td style="padding:10px 14px;color:var(--t2);">30 days — $99–$149</td>
+            <td style="padding:10px 14px;color:#4ade80;">Sometimes</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-866-383-3080</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 14px;color:#e20074;font-weight:700;">T-Mobile Home</td>
+            <td style="padding:10px 14px;color:#4ade80;">None</td>
+            <td style="padding:10px 14px;color:#4ade80;">$0</td>
+            <td style="padding:10px 14px;color:var(--t2);">30 days — $370 fee</td>
+            <td style="padding:10px 14px;color:#4ade80;">Yes</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-844-275-9310</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+            <td style="padding:10px 14px;color:#ff6b00;font-weight:700;">Sonic</td>
+            <td style="padding:10px 14px;color:#4ade80;">None</td>
+            <td style="padding:10px 14px;color:#4ade80;">$0</td>
+            <td style="padding:10px 14px;color:var(--t2);">Varies — confirm</td>
+            <td style="padding:10px 14px;color:#4ade80;">Sometimes</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-888-766-4233</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 14px;color:#aaa;font-weight:700;">Starlink</td>
+            <td style="padding:10px 14px;color:#4ade80;">None</td>
+            <td style="padding:10px 14px;color:#4ade80;">$0 service</td>
+            <td style="padding:10px 14px;color:#4ade80;">Customer owns dish</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">account.starlink.com</td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+            <td style="padding:10px 14px;color:#5ab4ff;font-weight:700;">Viasat</td>
+            <td style="padding:10px 14px;color:#f87171;">2-year</td>
+            <td style="padding:10px 14px;color:#f87171;">Up to $500</td>
+            <td style="padding:10px 14px;color:var(--t2);">Tech retrieves dish</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-855-463-9333</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;color:#f5a800;font-weight:700;">HughesNet</td>
+            <td style="padding:10px 14px;color:#f87171;">2-year</td>
+            <td style="padding:10px 14px;color:#f87171;">$400 / $200</td>
+            <td style="padding:10px 14px;color:var(--t2);">45 days — $300 fee</td>
+            <td style="padding:10px 14px;color:#f87171;">No</td>
+            <td style="padding:10px 14px;color:var(--t2);font-family:'IBM Plex Mono',monospace;font-size:11px;">1-866-347-3292</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--t3);font-family:'IBM Plex Mono',monospace;line-height:1.7;">
+      * Fees and policies verified as of early 2025. Always confirm current ETF with the provider before quoting a customer. ETF waivers are often available for military, moves, or documented outages.
+    </div>
+  </div>
+
+</section>
 </body>  
-</html>  
+</html>
